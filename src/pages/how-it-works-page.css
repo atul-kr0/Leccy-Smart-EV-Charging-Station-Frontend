@@ -1,0 +1,1621 @@
+/* ============================================================
+   LECCY — HOW IT WORKS
+============================================================ */
+
+.how-page {
+    min-height: 100vh;
+    overflow: hidden;
+
+    background: #030705;
+    color: #f4faf6;
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+}
+
+
+/* ============================================================
+   GLOBAL
+============================================================ */
+
+.how-shell {
+    width: min(1140px, calc(100% - 3rem));
+    margin-inline: auto;
+}
+
+
+.how-page a {
+    text-decoration: none;
+}
+
+
+/* ============================================================
+   HERO
+============================================================ */
+
+.how-hero {
+    position: relative;
+
+    min-height: 610px;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 78% 40%,
+            rgba(0, 210, 75, .09),
+            transparent 25rem
+        ),
+        linear-gradient(
+            135deg,
+            #020604 0%,
+            #06130b 55%,
+            #07160d 100%
+        );
+
+    border-bottom:
+        1px solid
+        rgba(54, 230, 115, .12);
+}
+
+
+.how-grid {
+    position: absolute;
+    inset: 0;
+
+    opacity: .35;
+
+    background-image:
+        linear-gradient(
+            rgba(0, 215, 76, .12) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(0, 215, 76, .12) 1px,
+            transparent 1px
+        );
+
+    background-size: 48px 48px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent 90%
+        );
+}
+
+
+.how-glow {
+    position: absolute;
+
+    border-radius: 50%;
+
+    pointer-events: none;
+
+    filter: blur(2px);
+}
+
+
+.how-glow-one {
+    width: 430px;
+    height: 430px;
+
+    right: -150px;
+    top: 40px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 220, 75, .12),
+            transparent 68%
+        );
+}
+
+
+.how-glow-two {
+    width: 320px;
+    height: 320px;
+
+    left: -170px;
+    bottom: -150px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 180, 65, .09),
+            transparent 68%
+        );
+}
+
+
+/* ============================================================
+   HERO INNER
+============================================================ */
+
+.how-hero-inner {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(400px, 490px);
+
+    gap: 80px;
+
+    align-items: center;
+
+    min-height: 610px;
+
+    padding-top: 70px;
+    padding-bottom: 70px;
+}
+
+
+/* ============================================================
+   HERO COPY
+============================================================ */
+
+.how-hero-copy {
+    max-width: 590px;
+}
+
+
+.how-eyebrow {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    color: #1be76b;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: .14em;
+}
+
+
+.how-eyebrow svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+.how-hero h1 {
+    margin: 28px 0 0;
+
+    max-width: 650px;
+
+    font-size:
+        clamp(
+            58px,
+            7vw,
+            82px
+        );
+
+    line-height: .94;
+
+    letter-spacing: -.065em;
+
+    font-weight: 800;
+
+    color: #f8fbf9;
+}
+
+
+.how-hero h1 span {
+    display: block;
+
+    color: #00d957;
+
+    text-shadow:
+        0 0 35px
+        rgba(0, 217, 87, .15);
+}
+
+
+.how-hero-copy > p {
+    max-width: 540px;
+
+    margin-top: 30px;
+
+    color: #a8baad;
+
+    font-size: 17px;
+
+    line-height: 1.75;
+}
+
+
+/* ============================================================
+   HERO BUTTONS
+============================================================ */
+
+.how-hero-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 34px;
+}
+
+
+.how-primary-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    min-height: 56px;
+
+    padding:
+        0 22px;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #00bd48,
+            #00d957
+        );
+
+    color: white;
+
+    font-size: 14px;
+    font-weight: 800;
+
+    box-shadow:
+        0 15px 35px
+        rgba(0, 190, 70, .18);
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease,
+        background .25s ease;
+}
+
+
+.how-primary-button svg {
+    width: 17px;
+    height: 17px;
+}
+
+
+.how-primary-button:hover {
+    transform: translateY(-2px);
+
+    background:
+        linear-gradient(
+            135deg,
+            #00d957,
+            #12e86a
+        );
+
+    box-shadow:
+        0 20px 45px
+        rgba(0, 210, 75, .25);
+}
+
+
+.how-secondary-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    min-height: 56px;
+
+    padding:
+        0 21px;
+
+    border:
+        1px solid
+        rgba(255, 255, 255, .18);
+
+    border-radius: 15px;
+
+    color: #d1ddd5;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    background:
+        rgba(5, 15, 9, .45);
+
+    transition:
+        border-color .25s ease,
+        background .25s ease,
+        color .25s ease;
+}
+
+
+.how-secondary-button:hover {
+    border-color:
+        rgba(0, 215, 87, .45);
+
+    background:
+        rgba(0, 190, 70, .07);
+
+    color: white;
+}
+
+
+/* ============================================================
+   ROUTE CARD
+============================================================ */
+
+.how-route-card {
+    position: relative;
+
+    width: 100%;
+    height: 420px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(52, 234, 119, .18);
+
+    border-radius: 24px;
+
+    background:
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(0, 200, 70, .045),
+            transparent 60%
+        ),
+        rgba(2, 9, 5, .82);
+
+    box-shadow:
+        0 35px 90px
+        rgba(0, 0, 0, .25),
+        inset 0 0 80px
+        rgba(0, 180, 60, .025);
+}
+
+
+.how-route-card::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    opacity: .32;
+
+    background-image:
+        linear-gradient(
+            rgba(43, 230, 116, .05) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(43, 230, 116, .05) 1px,
+            transparent 1px
+        );
+
+    background-size: 42px 42px;
+}
+
+
+.route-title {
+    position: absolute;
+
+    left: 27px;
+    top: 24px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+
+    z-index: 5;
+}
+
+
+.route-title span {
+    color: #1ce56b;
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: .14em;
+}
+
+
+.route-title small {
+    color: #61766a;
+
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   ROUTE PATH
+============================================================ */
+
+.route-path {
+    position: absolute;
+
+    inset: 45px 15px 35px 15px;
+
+    width: calc(100% - 30px);
+    height: calc(100% - 80px);
+
+    z-index: 1;
+
+    overflow: visible;
+}
+
+
+.route-path path {
+    fill: none;
+
+    stroke:
+        rgba(38, 224, 110, .16);
+
+    stroke-width: 1.2;
+
+    stroke-dasharray: 5 8;
+
+    animation:
+        route-dash 5s linear infinite;
+}
+
+
+@keyframes route-dash {
+
+    to {
+        stroke-dashoffset: -80;
+    }
+
+}
+
+
+/* ============================================================
+   ROUTE STEPS
+============================================================ */
+
+.route-step {
+    position: absolute;
+
+    z-index: 4;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    transition:
+        transform .3s ease;
+}
+
+
+.route-step:hover {
+    transform:
+        translateY(-3px);
+}
+
+
+.route-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border:
+        1px solid
+        rgba(45, 228, 116, .18);
+
+    border-radius: 50%;
+
+    color: #25e875;
+
+    background:
+        rgba(4, 18, 10, .95);
+
+    box-shadow:
+        0 0 0 7px
+        rgba(37, 232, 117, .025);
+
+    transition:
+        border-color .3s ease,
+        background .3s ease,
+        box-shadow .3s ease;
+}
+
+
+.route-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+
+.route-step:hover .route-icon {
+    border-color:
+        rgba(38, 232, 117, .45);
+
+    background:
+        rgba(25, 220, 100, .08);
+
+    box-shadow:
+        0 0 0 8px
+        rgba(38, 232, 117, .04),
+        0 0 25px
+        rgba(38, 232, 117, .1);
+}
+
+
+.route-text {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+    white-space: nowrap;
+}
+
+
+.route-text strong {
+    color: #f0f8f3;
+
+    font-size: 13px;
+
+    font-weight: 800;
+}
+
+
+.route-text span {
+    color: #647a6c;
+
+    font-size: 10px;
+}
+
+
+/* ============================================================
+   POSITIONING
+============================================================ */
+
+.route-step-find {
+    left: 48px;
+    top: 76px;
+}
+
+
+.route-step-compare {
+    right: 43px;
+    top: 125px;
+}
+
+
+.route-step-book {
+    left: 48px;
+    top: 222px;
+}
+
+
+.route-step-charge {
+    right: 36px;
+    bottom: 57px;
+
+    gap: 14px;
+}
+
+
+/* ============================================================
+   CHARGE ICON
+============================================================ */
+
+.route-charge-icon {
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 16px;
+
+    color: #03220e;
+
+    background:
+        linear-gradient(
+            145deg,
+            #5af29a,
+            #20da70
+        );
+
+    box-shadow:
+        0 0 0 8px
+        rgba(35, 225, 113, .055),
+        0 12px 35px
+        rgba(23, 215, 98, .18);
+
+    animation:
+        charger-float 3s ease-in-out infinite;
+}
+
+
+.route-charge-icon svg {
+    width: 25px;
+    height: 25px;
+}
+
+
+@keyframes charger-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-4px);
+    }
+
+}
+
+
+/* ============================================================
+   CHARGE TEXT
+============================================================ */
+
+.route-charge-text {
+    min-width: 95px;
+
+    position: relative;
+
+    z-index: 6;
+}
+
+
+.route-charge-text strong {
+    color: #ffffff;
+
+    font-size: 15px;
+}
+
+
+.route-charge-text span {
+    color: #73927f;
+}
+
+
+/* ============================================================
+   LIVE STATUS
+============================================================ */
+
+.route-status {
+    position: absolute;
+
+    right: 25px;
+    top: 25px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #60766a;
+
+    font-size: 9px;
+
+    z-index: 6;
+}
+
+
+.status-live-dot {
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: #22e875;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(34, 232, 117, .06),
+        0 0 12px
+        rgba(34, 232, 117, .3);
+
+    animation:
+        live-pulse 2s ease-in-out infinite;
+}
+
+
+@keyframes live-pulse {
+
+    0%,
+    100% {
+        opacity: .45;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+}
+
+
+/* ============================================================
+   INTRO
+============================================================ */
+
+.how-intro {
+    padding: 120px 0;
+
+    background:
+        #030705;
+}
+
+
+.how-intro .how-shell {
+    display: grid;
+
+    grid-template-columns: 90px 1fr;
+
+    gap: 30px;
+
+    max-width: 900px;
+}
+
+
+.how-intro-number {
+    color: #16dd63;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    letter-spacing: .1em;
+
+    padding-top: 10px;
+}
+
+
+.how-section-label {
+    margin: 0 0 14px;
+
+    color: #18df67;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: .14em;
+}
+
+
+.how-intro h2,
+.how-section-heading h2,
+.experience-copy h2,
+.how-cta h2 {
+    margin: 0;
+
+    color: #f6faf7;
+
+    font-size:
+        clamp(
+            38px,
+            5vw,
+            62px
+        );
+
+    line-height: 1;
+
+    letter-spacing: -.045em;
+
+    font-weight: 800;
+}
+
+
+.how-intro h2 span,
+.how-section-heading h2 span,
+.experience-copy h2 span,
+.how-cta h2 span {
+    display: block;
+
+    color: #00d957;
+}
+
+
+.how-intro-text {
+    max-width: 650px;
+
+    margin-top: 25px;
+
+    color: #8fa397;
+
+    font-size: 16px;
+
+    line-height: 1.8;
+}
+
+
+/* ============================================================
+   STEPS SECTION
+============================================================ */
+
+.how-steps-section {
+    position: relative;
+
+    padding: 110px 0 125px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #06130b,
+            #081810 55%,
+            #061009
+        );
+
+    border-block:
+        1px solid
+        rgba(65, 226, 119, .1);
+}
+
+
+.how-section-heading {
+    max-width: 700px;
+
+    margin-bottom: 55px;
+}
+
+
+.how-section-heading > p:last-child {
+    max-width: 600px;
+
+    margin-top: 23px;
+
+    color: #91a59a;
+
+    font-size: 16px;
+
+    line-height: 1.75;
+}
+
+
+/* ============================================================
+   STEP GRID
+============================================================ */
+
+.how-steps-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    border:
+        1px solid
+        rgba(75, 225, 125, .13);
+
+    border-radius: 22px;
+
+    overflow: hidden;
+
+    background:
+        rgba(0, 0, 0, .13);
+}
+
+
+.how-step-card {
+    position: relative;
+
+    min-height: 250px;
+
+    padding: 27px;
+
+    border-right:
+        1px solid
+        rgba(72, 225, 121, .1);
+
+    border-bottom:
+        1px solid
+        rgba(72, 225, 121, .1);
+
+    transition:
+        background .3s ease,
+        transform .3s ease;
+}
+
+
+.how-step-card:hover {
+    background:
+        rgba(0, 210, 75, .045);
+}
+
+
+.step-top {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+
+.step-number {
+    color: #18df67;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: .12em;
+}
+
+
+.step-icon {
+    width: 43px;
+    height: 43px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    color: #22e875;
+
+    background:
+        rgba(0, 200, 70, .07);
+
+    border:
+        1px solid
+        rgba(0, 220, 75, .12);
+}
+
+
+.step-icon svg {
+    width: 19px;
+    height: 19px;
+}
+
+
+.how-step-card h3 {
+    margin-top: 40px;
+
+    color: #f0f7f2;
+
+    font-size: 18px;
+
+    font-weight: 800;
+}
+
+
+.how-step-card p {
+    max-width: 270px;
+
+    margin-top: 11px;
+
+    color: #8fa398;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+
+.step-arrow {
+    position: absolute;
+
+    right: 23px;
+    bottom: 19px;
+
+    color: #2b9f5b;
+
+    font-size: 18px;
+
+    transition:
+        transform .3s ease,
+        color .3s ease;
+}
+
+
+.how-step-card:hover .step-arrow {
+    color: #25e875;
+
+    transform:
+        translateX(4px);
+}
+
+
+/* ============================================================
+   EXPERIENCE
+============================================================ */
+
+.how-experience {
+    padding: 110px 0;
+
+    background: #030705;
+}
+
+
+.experience-card {
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 70px;
+
+    padding:
+        clamp(30px, 6vw, 65px);
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(64, 224, 119, .14);
+
+    border-radius: 25px;
+
+    background:
+        linear-gradient(
+            130deg,
+            #091a0f,
+            #06110a
+        );
+}
+
+
+.experience-card::before {
+    content: "";
+
+    position: absolute;
+
+    width: 360px;
+    height: 360px;
+
+    right: -170px;
+    top: -170px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 215, 75, .12),
+            transparent 70%
+        );
+}
+
+
+.experience-copy {
+    position: relative;
+
+    z-index: 2;
+}
+
+
+.experience-copy > p:last-child {
+    max-width: 530px;
+
+    margin-top: 22px;
+
+    color: #93a99a;
+
+    font-size: 15px;
+
+    line-height: 1.8;
+}
+
+
+.experience-points {
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 17px;
+
+    justify-content: center;
+}
+
+
+.experience-points > div {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 15px;
+
+    border:
+        1px solid
+        rgba(72, 225, 121, .08);
+
+    border-radius: 14px;
+
+    background:
+        rgba(0, 0, 0, .15);
+}
+
+
+.experience-icon {
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    border-radius: 11px;
+
+    color: #24e876;
+
+    background:
+        rgba(0, 210, 75, .08);
+}
+
+
+.experience-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+
+.experience-points span {
+    color: #c2d1c6;
+
+    font-size: 13px;
+
+    font-weight: 650;
+}
+
+
+/* ============================================================
+   CTA
+============================================================ */
+
+.how-cta-section {
+    padding: 30px 0 100px;
+
+    background: #030705;
+}
+
+
+.how-cta {
+    position: relative;
+
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: space-between;
+
+    gap: 50px;
+
+    padding:
+        clamp(35px, 6vw, 65px);
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(57, 227, 116, .16);
+
+    border-radius: 25px;
+
+    background:
+        linear-gradient(
+            125deg,
+            #0a2112,
+            #06130b
+        );
+}
+
+
+.how-cta-glow {
+    position: absolute;
+
+    width: 450px;
+    height: 450px;
+
+    right: -180px;
+    top: -220px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(0, 215, 75, .17),
+            transparent 68%
+        );
+}
+
+
+.how-cta-content {
+    position: relative;
+
+    z-index: 2;
+}
+
+
+.how-cta-content > p:last-child {
+    max-width: 570px;
+
+    margin-top: 22px;
+
+    color: #91a69a;
+
+    line-height: 1.75;
+}
+
+
+.how-cta-actions {
+    position: relative;
+
+    z-index: 2;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: flex-end;
+
+    gap: 17px;
+
+    flex-shrink: 0;
+}
+
+
+.how-cta-link {
+    color: #a9bdb0;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    transition:
+        color .2s ease;
+}
+
+
+.how-cta-link:hover {
+    color: #22e875;
+}
+
+
+/* ============================================================
+   REVEAL ANIMATION
+============================================================ */
+
+[data-reveal] {
+    opacity: 0;
+
+    transform:
+        translateY(25px);
+
+    transition:
+        opacity .7s ease,
+        transform .7s ease;
+}
+
+
+[data-reveal].is-visible {
+    opacity: 1;
+
+    transform:
+        translateY(0);
+}
+
+
+/* ============================================================
+   RESPONSIVE — TABLET
+============================================================ */
+
+@media (max-width: 950px) {
+
+    .how-hero-inner {
+        grid-template-columns: 1fr;
+
+        gap: 55px;
+
+        padding-top: 65px;
+        padding-bottom: 80px;
+    }
+
+
+    .how-hero {
+        min-height: auto;
+    }
+
+
+    .how-route-card {
+        max-width: 520px;
+
+        margin-inline: auto;
+    }
+
+
+    .how-steps-grid {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+
+    .how-step-card:nth-child(2n) {
+        border-right: 0;
+    }
+
+
+    .how-step-card:nth-last-child(-n + 2) {
+        border-bottom: 0;
+    }
+
+
+    .experience-card {
+        grid-template-columns: 1fr;
+
+        gap: 40px;
+    }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE — MOBILE
+============================================================ */
+
+@media (max-width: 640px) {
+
+    .how-shell {
+        width:
+            min(
+                100% - 2rem,
+                1140px
+            );
+    }
+
+
+    .how-hero h1 {
+        font-size: 55px;
+    }
+
+
+    .how-hero-copy > p {
+        font-size: 15px;
+    }
+
+
+    .how-hero-actions {
+        align-items: stretch;
+
+        flex-direction: column;
+    }
+
+
+    .how-primary-button,
+    .how-secondary-button {
+        width: 100%;
+    }
+
+
+    .how-route-card {
+        height: 350px;
+    }
+
+
+    .route-title {
+        left: 20px;
+        top: 20px;
+    }
+
+
+    .route-status {
+        display: none;
+    }
+
+
+    .route-step-find {
+        left: 24px;
+        top: 75px;
+    }
+
+
+    .route-step-compare {
+        right: 22px;
+        top: 115px;
+    }
+
+
+    .route-step-book {
+        left: 24px;
+        top: 205px;
+    }
+
+
+    .route-step-charge {
+        right: 20px;
+        bottom: 38px;
+    }
+
+
+    .route-icon {
+        width: 42px;
+        height: 42px;
+    }
+
+
+    .route-charge-icon {
+        width: 51px;
+        height: 51px;
+
+        border-radius: 14px;
+    }
+
+
+    .route-text span {
+        display: none;
+    }
+
+
+    .how-intro {
+        padding: 85px 0;
+    }
+
+
+    .how-intro .how-shell {
+        grid-template-columns: 1fr;
+
+        gap: 15px;
+    }
+
+
+    .how-intro h2,
+    .how-section-heading h2,
+    .experience-copy h2,
+    .how-cta h2 {
+        font-size: 42px;
+    }
+
+
+    .how-steps-section {
+        padding:
+            85px 0;
+    }
+
+
+    .how-steps-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .how-step-card {
+        min-height: 220px;
+
+        border-right: 0;
+    }
+
+
+    .how-step-card:not(:last-child) {
+        border-bottom:
+            1px solid
+            rgba(72, 225, 121, .1);
+    }
+
+
+    .how-step-card:last-child {
+        border-bottom: 0;
+    }
+
+
+    .experience-card {
+        padding: 30px 24px;
+    }
+
+
+    .how-cta {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .how-cta-actions {
+        width: 100%;
+
+        align-items: stretch;
+    }
+
+
+    .how-cta-actions .how-primary-button {
+        width: 100%;
+    }
+
+}
+
+
+/* ============================================================
+   SMALL PHONES
+============================================================ */
+
+@media (max-width: 430px) {
+
+    .how-hero h1 {
+        font-size: 48px;
+    }
+
+
+    .how-route-card {
+        height: 320px;
+    }
+
+
+    .route-step-find {
+        left: 18px;
+        top: 70px;
+    }
+
+
+    .route-step-compare {
+        right: 15px;
+        top: 108px;
+    }
+
+
+    .route-step-book {
+        left: 18px;
+        top: 190px;
+    }
+
+
+    .route-step-charge {
+        right: 12px;
+        bottom: 30px;
+    }
+
+
+    .route-text strong {
+        font-size: 12px;
+    }
+
+
+    .route-charge-text strong {
+        font-size: 13px;
+    }
+
+}
