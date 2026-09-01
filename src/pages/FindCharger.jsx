@@ -7,12 +7,16 @@ import React, {
 } from "react";
 
 import * as maplibregl from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+
+import "maplibre-gl/dist/maplibre-gl.css";
+
+maplibregl.setWorkerUrl(workerUrl);
 
 import {
     useNavigate,
 } from "react-router-dom";
 
-import "maplibre-gl/dist/maplibre-gl.css";
 
 
 // ============================================================
