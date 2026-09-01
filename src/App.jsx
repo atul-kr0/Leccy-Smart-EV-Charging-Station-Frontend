@@ -1,4 +1,5 @@
 import React from "react";
+
 import MyVehicles from "./pages/MyVehicles";
 import Bookings from "./pages/Bookings";
 import FindCharger from "./pages/FindCharger";
@@ -12,7 +13,6 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Support from "./pages/Support";
 import History from "./pages/History";
-
 import MapTest from "./pages/MapTest";
 
 import {
@@ -30,6 +30,27 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
 
+
+/* ============================================================
+   PROTECTED ROUTE
+   ============================================================ */
+
+const ProtectedRoute = ({ children }) => {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return children;
+};
+
+
+/* ============================================================
+   APP
+   ============================================================ */
+
 const App = () => {
 
     return (
@@ -37,14 +58,9 @@ const App = () => {
 
             <Routes>
 
-                {/* =========================
+                {/* =================================================
                     PUBLIC PAGES
-                ========================= */}
-
-                <Route
-                    path="/map-test"
-                    element={<MapTest />}
-                />
+                   ================================================= */}
 
                 <Route
                     path="/"
@@ -56,10 +72,20 @@ const App = () => {
                     element={<Login />}
                 />
 
+                <Route
+                    path="/register"
+                    element={<Register />}
+                />
 
-                <Route path="/how-it-works" element={<HowItWorks />} />
+                <Route
+                    path="/how-it-works"
+                    element={<HowItWorks />}
+                />
 
-                <Route path="/pricing" element={<Pricing />} />
+                <Route
+                    path="/pricing"
+                    element={<Pricing />}
+                />
 
                 <Route
                     path="/contact"
@@ -72,20 +98,30 @@ const App = () => {
                 />
 
                 <Route
-                    path="/register"
-                    element={<Register />}
+                    path="/features"
+                    element={<Feature />}
                 />
 
-                <Route path="/features" element={<Feature />} />
+                {/* Keep this public if you still use it for testing */}
+                <Route
+                    path="/map-test"
+                    element={<MapTest />}
+                />
 
-                {/* =========================
-                    LOGGED-IN APPLICATION
-                ========================= */}
+
+                {/* =================================================
+                    PROTECTED APPLICATION
+                   ================================================= */}
 
                 <Route
                     path="/home"
-                    element={<AppLayout />}
+                    element={
+                        <ProtectedRoute>
+                            <AppLayout />
+                        </ProtectedRoute>
+                    }
                 >
+
                     <Route
                         index
                         element={<Home />}
@@ -113,7 +149,8 @@ const App = () => {
 
                     <Route
                         path="history"
-                        element={<History />} />
+                        element={<History />}
+                    />
 
                     <Route
                         path="support"
@@ -138,9 +175,9 @@ const App = () => {
                 </Route>
 
 
-                {/* =========================
+                {/* =================================================
                     UNKNOWN ROUTE
-                ========================= */}
+                   ================================================= */}
 
                 <Route
                     path="*"
