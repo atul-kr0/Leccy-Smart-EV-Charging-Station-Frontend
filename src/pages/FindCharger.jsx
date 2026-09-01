@@ -13,14 +13,13 @@ import {
 } from "react-router-dom";
 
 import "maplibre-gl/dist/maplibre-gl.css";
-maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 
 // ============================================================
 // CONFIG
 // ============================================================
 
-const API_BASE_URL = "https://leccy-smart-ev-charging-station-management-syste-production.up.railway.app";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const STATIONS_URL =
     `${API_BASE_URL}/api/stations`;
@@ -37,13 +36,8 @@ const RECOMMENDATION_URL =
 const BOOKING_URL =
     `${API_BASE_URL}/api/bookings`;
 
-// ============================================================
-// MAPTILER
-// ============================================================
-// TEMPORARY TEST:
-// Paste your MapTiler key between the quotes below.
-// Do NOT commit this version to GitHub.
-const MAPTILER_KEY = "0D41JgFb9X2woj3paZ2m";
+const MAPTILER_KEY =
+    import.meta.env.VITE_MAPTILER_KEY;
 
 
 // ============================================================
@@ -1043,25 +1037,14 @@ const FindCharger = () => {
         const rawLeft = mapRect.left + point.x;
         const rawTop = mapRect.top + point.y;
 
-        // Keep the larger card inside the viewport horizontally while
-        // preserving the marker as the arrow anchor.
-        const popupWidth = Math.min(500, window.innerWidth - 32);
-        const halfWidth = popupWidth / 2;
+        // Keep the larger card inside the viewport horizontally.
+        const halfWidth = 215;
         const left = Math.min(
-            Math.max(rawLeft, halfWidth + 16),
-            window.innerWidth - halfWidth - 16
+            Math.max(rawLeft, halfWidth + 18),
+            window.innerWidth - halfWidth - 18
         );
 
-        // Arrow position relative to the popup. This is important when
-        // the popup is clamped near an edge: the card can move, but the
-        // arrow must continue pointing exactly at the selected marker.
-        const arrowLeft = Math.max(22, Math.min(popupWidth - 22, rawLeft - (left - halfWidth) + 0));
-
-        setPopupPosition({
-            left,
-            top: rawTop,
-            arrowLeft,
-        });
+        setPopupPosition({ left, top: rawTop });
     }, [selectedStation]);
 
     useEffect(() => {
@@ -2278,15 +2261,14 @@ const FindCharger = () => {
                 .fc-react-popup {
                     position: fixed;
                     z-index: 2000;
-                    width: min(500px, calc(100vw - 32px));
-                    min-height: 500px;
-                    max-height: min(720px, calc(100vh - 36px));
+                    width: 430px;
+                    max-width: calc(100vw - 36px);
+                    max-height: calc(100vh - 36px);
                     overflow-y: auto;
-                    overflow-x: hidden;
                     overscroll-behavior: contain;
-                    transform: translate(-50%, calc(-100% - 4px));
-                    border: 1px solid #dce5eb;
-                    border-radius: 22px;
+                    transform: translate(-50%, calc(-100% - 18px));
+                    border: 1px solid #e1e8ed;
+                    border-radius: 20px;
                     background: white;
                     box-shadow: 0 24px 70px rgba(6,36,61,.24);
                     animation: fcPopupIn .22s ease both;
@@ -2297,11 +2279,11 @@ const FindCharger = () => {
                 @keyframes fcPopupIn {
                     from {
                         opacity: 0;
-                        transform: translate(-50%, calc(-100% + 2px)) scale(.97);
+                        transform: translate(-50%, calc(-100% - 10px)) scale(.97);
                     }
                     to {
                         opacity: 1;
-                        transform: translate(-50%, calc(-100% - 4px)) scale(1);
+                        transform: translate(-50%, calc(-100% - 18px)) scale(1);
                     }
                 }
 
@@ -2316,7 +2298,7 @@ const FindCharger = () => {
 
                 .fc-react-popup-arrow {
                     position: absolute;
-                    left: var(--fc-arrow-left, 250px);
+                    left: 50%;
                     bottom: -8px;
                     width: 16px;
                     height: 16px;
@@ -2350,7 +2332,6 @@ const FindCharger = () => {
                 .fc-react-popup .fc-popup {
                     width: 100%;
                     box-sizing: border-box;
-                    padding: 22px 22px 20px;
                 }
 
 
@@ -2554,12 +2535,12 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-name {
-                    font-size: 22px;
+                    font-size: 20px;
                     font-weight: 800;
                 }
 
                 .fc-popup-address {
-                    margin-top: 6px;
+                    margin-top: 5px;
                     color: #7c91a3;
                     font-size: 12px;
                     line-height: 1.4;
@@ -3177,8 +3158,7 @@ const FindCharger = () => {
                     }
 
                     .fc-react-popup {
-                        width: min(500px, calc(100vw - 24px));
-                        min-height: 440px;
+                        width: min(430px, calc(100vw - 24px));
                         max-height: calc(100vh - 24px);
                     }
                 }
@@ -3551,7 +3531,6 @@ const FindCharger = () => {
                     style={{
                         left: popupPosition.left,
                         top: popupPosition.top,
-                        "--fc-arrow-left": `${popupPosition.arrowLeft ?? 250}px`,
                     }}
                 >
                     <div className="fc-react-popup-arrow" />
@@ -3655,8 +3634,36 @@ const FindCharger = () => {
                                         <div className="fc-popup-muted">Queue information unavailable.</div>
                                     ) : (
                                         stationDetails.connectors.map((connector, index) => {
-                                            const wait = Number(connector.waitingTimeMinutes);
-                                            const unavailable = !Number.isFinite(wait) || wait < 0;
+                                            const available = Number(connector.available ?? 0);
+                                            const busy = Number(connector.busy ?? 0);
+
+                                            const rawWait =
+                                                connector.waitingTimeMinutes ??
+                                                connector.waitingTime ??
+                                                connector.waitTime ??
+                                                connector.queueWaitTime;
+
+                                            const wait =
+                                                rawWait === null ||
+                                                rawWait === undefined ||
+                                                rawWait === ""
+                                                    ? null
+                                                    : Number(rawWait);
+
+                                            let queueText;
+
+                                            if (available > 0) {
+                                                queueText = "Ready now";
+                                            } else if (Number.isFinite(wait) && wait >= 0) {
+                                                queueText =
+                                                    wait === 0
+                                                        ? "Ready now"
+                                                        : `~${wait} min`;
+                                            } else if (busy > 0) {
+                                                queueText = "Busy";
+                                            } else {
+                                                queueText = "Unavailable";
+                                            }
 
                                             return (
                                                 <div
@@ -3664,12 +3671,14 @@ const FindCharger = () => {
                                                     key={`queue-${connector.connectorType ?? "connector"}-${index}`}
                                                 >
                                                     <span>{formatConnectorName(connector.connectorType)}</span>
-                                                    <span className={`fc-queue-time ${unavailable ? "unavailable" : ""}`}>
-                                                        {unavailable
-                                                            ? "Unavailable"
-                                                            : wait === 0
-                                                                ? "Ready now"
-                                                                : `~${wait} min`}
+                                                    <span
+                                                        className={`fc-queue-time ${
+                                                            queueText === "Unavailable"
+                                                                ? "unavailable"
+                                                                : ""
+                                                        }`}
+                                                    >
+                                                        {queueText}
                                                     </span>
                                                 </div>
                                             );
