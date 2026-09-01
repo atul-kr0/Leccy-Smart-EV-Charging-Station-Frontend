@@ -13,13 +13,14 @@ import {
 } from "react-router-dom";
 
 import "maplibre-gl/dist/maplibre-gl.css";
+maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 
 // ============================================================
 // CONFIG
 // ============================================================
 
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = "https://leccy-smart-ev-charging-station-management-syste-production.up.railway.app";
 
 const STATIONS_URL =
     `${API_BASE_URL}/api/stations`;
@@ -36,8 +37,13 @@ const RECOMMENDATION_URL =
 const BOOKING_URL =
     `${API_BASE_URL}/api/bookings`;
 
-const MAPTILER_KEY =
-    import.meta.env.VITE_MAPTILER_KEY;
+// ============================================================
+// MAPTILER
+// ============================================================
+// TEMPORARY TEST:
+// Paste your MapTiler key between the quotes below.
+// Do NOT commit this version to GitHub.
+const MAPTILER_KEY = "0D41JgFb9X2woj3paZ2m";
 
 
 // ============================================================
@@ -472,92 +478,6 @@ const getBrowserPosition = () => {
     );
 };
 
-
-// ============================================================
-// STATION DETAILS HELPERS
-// ============================================================
-
-const getDetailsPayload = (details) => {
-    if (!details || typeof details !== "object") {
-        return null;
-    }
-
-    // Support both a direct DTO response and a wrapped response.
-    if (details.data && typeof details.data === "object") {
-        return details.data;
-    }
-
-    return details;
-};
-
-const getConnectorList = (details) => {
-    const payload = getDetailsPayload(details);
-
-    const candidates = [
-        payload?.connectorAvailability,
-        payload?.connectors,
-        payload?.connectorAvailabilities,
-        payload?.chargerAvailability,
-        payload?.chargerAvailabilities,
-    ];
-
-    for (const candidate of candidates) {
-        if (Array.isArray(candidate)) {
-            return candidate;
-        }
-    }
-
-    return [];
-};
-
-const getConnectorWait = (connector) => {
-    const candidates = [
-        connector?.waitingTime,
-        connector?.waitingTimeMinutes,
-        connector?.estimatedWaitingTime,
-        connector?.estimatedWaitMinutes,
-        connector?.waitTime,
-        connector?.queueWaitTime,
-    ];
-
-    for (const value of candidates) {
-        if (value === null || value === undefined || value === "") {
-            continue;
-        }
-
-        const number = Number(value);
-
-        if (Number.isFinite(number)) {
-            return number;
-        }
-    }
-
-    return null;
-};
-
-const getDetailsDistance = (details) => {
-    const payload = getDetailsPayload(details);
-
-    return (
-        payload?.distanceKm ??
-        payload?.drivingDistanceKm ??
-        payload?.distance ??
-        null
-    );
-};
-
-const getDetailsDriveTime = (details) => {
-    const payload = getDetailsPayload(details);
-
-    return (
-        payload?.estimatedDriveTimeMinutes ??
-        payload?.estimatedTravelTimeMinutes ??
-        payload?.drivingEtaMinutes ??
-        payload?.travelTimeMinutes ??
-        payload?.etaMinutes ??
-        null
-    );
-};
 
 // ============================================================
 // MAIN COMPONENT
@@ -1123,22 +1043,24 @@ const FindCharger = () => {
         const rawLeft = mapRect.left + point.x;
         const rawTop = mapRect.top + point.y;
 
-        // Keep the larger card inside the viewport horizontally.
-        const popupHalfWidth = Math.min(390, (window.innerWidth - 40) / 2);
+        // Keep the larger card inside the viewport horizontally while
+        // preserving the marker as the arrow anchor.
+        const popupWidth = Math.min(500, window.innerWidth - 32);
+        const halfWidth = popupWidth / 2;
         const left = Math.min(
-            Math.max(rawLeft, popupHalfWidth + 16),
-            window.innerWidth - popupHalfWidth - 16
+            Math.max(rawLeft, halfWidth + 16),
+            window.innerWidth - halfWidth - 16
         );
 
-        // Prefer above the marker. If the marker is too close to the
-        // top of the viewport, render below it instead of clipping the card.
-        const placeBelow = rawTop < 235;
+        // Arrow position relative to the popup. This is important when
+        // the popup is clamped near an edge: the card can move, but the
+        // arrow must continue pointing exactly at the selected marker.
+        const arrowLeft = Math.max(22, Math.min(popupWidth - 22, rawLeft - (left - halfWidth) + 0));
 
         setPopupPosition({
             left,
             top: rawTop,
-            placeBelow,
-            markerX: rawLeft - left,
+            arrowLeft,
         });
     }, [selectedStation]);
 
@@ -2356,18 +2278,15 @@ const FindCharger = () => {
                 .fc-react-popup {
                     position: fixed;
                     z-index: 2000;
-                    /* Deliberately larger so the details card does not look cramped.
-                       680px also remains comfortable on normal desktop map widths. */
-                    width: 780px;
-                    min-width: 700px;
-                    min-height: 420px;
-                    max-width: calc(100vw - 32px);
-                    max-height: min(680px, calc(100vh - 32px));
+                    width: min(500px, calc(100vw - 32px));
+                    min-height: 500px;
+                    max-height: min(720px, calc(100vh - 36px));
                     overflow-y: auto;
+                    overflow-x: hidden;
                     overscroll-behavior: contain;
-                    transform: translate(-50%, calc(-100% - 12px));
-                    border: 1px solid #e1e8ed;
-                    border-radius: 20px;
+                    transform: translate(-50%, calc(-100% - 4px));
+                    border: 1px solid #dce5eb;
+                    border-radius: 22px;
                     background: white;
                     box-shadow: 0 24px 70px rgba(6,36,61,.24);
                     animation: fcPopupIn .22s ease both;
@@ -2378,11 +2297,11 @@ const FindCharger = () => {
                 @keyframes fcPopupIn {
                     from {
                         opacity: 0;
-                        transform: translate(-50%, calc(-100% - 6px)) scale(.97);
+                        transform: translate(-50%, calc(-100% + 2px)) scale(.97);
                     }
                     to {
                         opacity: 1;
-                        transform: translate(-50%, calc(-100% - 12px)) scale(1);
+                        transform: translate(-50%, calc(-100% - 4px)) scale(1);
                     }
                 }
 
@@ -2397,7 +2316,7 @@ const FindCharger = () => {
 
                 .fc-react-popup-arrow {
                     position: absolute;
-                    left: var(--popup-arrow-x, 50%);
+                    left: var(--fc-arrow-left, 250px);
                     bottom: -8px;
                     width: 16px;
                     height: 16px;
@@ -2405,34 +2324,6 @@ const FindCharger = () => {
                     background: white;
                     border-right: 1px solid #e1e8ed;
                     border-bottom: 1px solid #e1e8ed;
-                }
-
-                .fc-react-popup.is-below {
-                    transform: translate(-50%, 12px);
-                }
-
-                @keyframes fcPopupInBelow {
-                    from {
-                        opacity: 0;
-                        transform: translate(-50%, 6px) scale(.97);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translate(-50%, 12px) scale(1);
-                    }
-                }
-
-                .fc-react-popup.is-below {
-                    animation: fcPopupInBelow .22s ease both;
-                }
-
-                .fc-react-popup.is-below .fc-react-popup-arrow {
-                    top: -8px;
-                    bottom: auto;
-                    border-right: none;
-                    border-bottom: none;
-                    border-left: 1px solid #e1e8ed;
-                    border-top: 1px solid #e1e8ed;
                 }
 
                 .fc-react-popup-close {
@@ -2458,9 +2349,8 @@ const FindCharger = () => {
 
                 .fc-react-popup .fc-popup {
                     width: 100%;
-                    min-height: 420px;
                     box-sizing: border-box;
-                    padding: 28px 30px 26px;
+                    padding: 22px 22px 20px;
                 }
 
 
@@ -2664,12 +2554,12 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-name {
-                    font-size: 24px;
+                    font-size: 22px;
                     font-weight: 800;
                 }
 
                 .fc-popup-address {
-                    margin-top: 7px;
+                    margin-top: 6px;
                     color: #7c91a3;
                     font-size: 12px;
                     line-height: 1.4;
@@ -2683,7 +2573,7 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-pill {
-                    padding: 10px 13px;
+                    padding: 8px 11px;
                     border-radius: 9px;
                     background: #f4f7f9;
                     color: #4e6579;
@@ -2771,17 +2661,7 @@ const FindCharger = () => {
                     color: #8a98a3;
                 }
 
-                .fc-queue-note {
-                margin-top: 14px;
-                padding: 10px 12px;
-                border-radius: 10px;
-                background: #f0fdf4;
-                color: #64748b;
-                font-size: 11px;
-                line-height: 1.45;
-            }
-
-            .fc-popup-actions {
+                .fc-popup-actions {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 8px;
@@ -2789,7 +2669,7 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-button {
-                    height: 52px;
+                    height: 46px;
                     border: none;
                     border-radius: 10px;
                     cursor: pointer;
@@ -3297,10 +3177,8 @@ const FindCharger = () => {
                     }
 
                     .fc-react-popup {
-                        width: calc(100vw - 24px);
-                        min-width: 0;
-                        min-height: 0;
-                        max-width: calc(100vw - 24px);
+                        width: min(500px, calc(100vw - 24px));
+                        min-height: 440px;
                         max-height: calc(100vh - 24px);
                     }
                 }
@@ -3669,15 +3547,11 @@ const FindCharger = () => {
 
             {selectedStation && popupPosition && (
                 <div
-                    className={`fc-react-popup ${
-                        popupPosition.placeBelow ? "is-below" : ""
-                    }`}
+                    className="fc-react-popup"
                     style={{
                         left: popupPosition.left,
                         top: popupPosition.top,
-                        // Keep the arrow exactly over the selected marker even
-                        // when the card has to be clamped inside the viewport.
-                        "--popup-arrow-x": `${Math.max(22, Math.min(758, popupPosition.markerX))}px`,
+                        "--fc-arrow-left": `${popupPosition.arrowLeft ?? 250}px`,
                     }}
                 >
                     <div className="fc-react-popup-arrow" />
@@ -3710,14 +3584,6 @@ const FindCharger = () => {
 
                         {!detailsLoading && !detailsError && stationDetails && (
                             <>
-                                {(() => {
-                                    const details = getDetailsPayload(stationDetails);
-                                    const connectors = getConnectorList(stationDetails);
-                                    const distance = getDetailsDistance(stationDetails);
-                                    const driveTime = getDetailsDriveTime(stationDetails);
-
-                                    return (
-                                        <>
                                 <div className="fc-popup-header">
                                     <div>
                                         <div className="fc-popup-name">
@@ -3736,26 +3602,30 @@ const FindCharger = () => {
                                 </div>
 
                                 <div className="fc-popup-summary">
-                                    <span className="fc-popup-pill">⭐ {details?.rating ?? selectedStation.rating ?? "—"}</span>
-                                    <span className="fc-popup-pill">₹{details?.pricePerKwh ?? selectedStation.pricePerKwh ?? "—"}/kWh</span>
+                                    <span className="fc-popup-pill">⭐ {selectedStation.rating ?? "—"}</span>
+                                    <span className="fc-popup-pill">₹{selectedStation.pricePerKwh ?? "—"}/kWh</span>
                                     <span className="fc-popup-pill">
                                         {formatDistance(
-                                            distance
+                                            stationDetails.drivingDistanceKm ??
+                                            stationDetails.distanceKm ??
+                                            stationDetails.distance
                                         )}
                                     </span>
                                     <span className="fc-popup-pill">
-                                        {driveTime != null
-                                            ? `~${driveTime} min drive`
-                                            : "Drive time —"}
+                                        {stationDetails.estimatedTravelTimeMinutes != null
+                                            ? `~${stationDetails.estimatedTravelTimeMinutes} min drive`
+                                            : stationDetails.drivingEtaMinutes != null
+                                                ? `~${stationDetails.drivingEtaMinutes} min drive`
+                                                : "Drive time —"}
                                     </span>
                                 </div>
 
                                 <div className="fc-connector-section">
                                     <div className="fc-popup-section-title">CONNECTORS</div>
-                                    {connectors.length === 0 ? (
+                                    {(stationDetails.connectors || []).length === 0 ? (
                                         <div className="fc-popup-muted">Connector information unavailable.</div>
                                     ) : (
-                                        connectors.map((connector, index) => {
+                                        stationDetails.connectors.map((connector, index) => {
                                             const available = Number(connector.available ?? 0);
                                             const busy = Number(connector.busy ?? 0);
                                             const unavailable = Number(connector.unavailable ?? 0);
@@ -3781,32 +3651,12 @@ const FindCharger = () => {
 
                                 <div className="fc-queue">
                                     <div className="fc-popup-section-title">QUEUE STATUS</div>
-                                    {connectors.length === 0 ? (
+                                    {(stationDetails.connectors || []).length === 0 ? (
                                         <div className="fc-popup-muted">Queue information unavailable.</div>
                                     ) : (
-                                        connectors.map((connector, index) => {
-                                            const available = Number(connector.available ?? 0);
-                                            const busy = Number(connector.busy ?? 0);
-
-                                            const wait = getConnectorWait(connector);
-
-                                            let queueText;
-
-                                            if (Number.isFinite(wait) && wait >= 0) {
-                                                queueText =
-                                                    wait === 0
-                                                        ? "0 min • Ready now"
-                                                        : `~${wait} min`;
-                                            } else if (available > 0) {
-                                                // Backend may omit the wait field for an
-                                                // available charger. Availability itself
-                                                // means there is no queue.
-                                                queueText = "0 min • Ready now";
-                                            } else if (busy > 0) {
-                                                queueText = "Wait time unavailable";
-                                            } else {
-                                                queueText = "Unavailable";
-                                            }
+                                        stationDetails.connectors.map((connector, index) => {
+                                            const wait = Number(connector.waitingTimeMinutes);
+                                            const unavailable = !Number.isFinite(wait) || wait < 0;
 
                                             return (
                                                 <div
@@ -3814,24 +3664,16 @@ const FindCharger = () => {
                                                     key={`queue-${connector.connectorType ?? "connector"}-${index}`}
                                                 >
                                                     <span>{formatConnectorName(connector.connectorType)}</span>
-                                                    <span
-                                                        className={`fc-queue-time ${
-                                                            queueText === "Unavailable"
-                                                                ? "unavailable"
-                                                                : ""
-                                                        }`}
-                                                    >
-                                                        {queueText}
+                                                    <span className={`fc-queue-time ${unavailable ? "unavailable" : ""}`}>
+                                                        {unavailable
+                                                            ? "Unavailable"
+                                                            : wait === 0
+                                                                ? "Ready now"
+                                                                : `~${wait} min`}
                                                     </span>
                                                 </div>
                                             );
                                         })
-                                    )}
-
-                                    {connectors.length > 0 && (
-                                        <div className="fc-queue-note">
-                                            Waiting time is estimated from current station occupancy.
-                                        </div>
                                     )}
                                 </div>
 
@@ -3853,9 +3695,6 @@ const FindCharger = () => {
                                         Directions
                                     </button>
                                 </div>
-                                        </>
-                                    );
-                                })()}
                             </>
                         )}
                     </div>
