@@ -9,14 +9,13 @@ import React, {
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 
-import "maplibre-gl/dist/maplibre-gl.css";
-
-maplibregl.setWorkerUrl(workerUrl);
-
 import {
     useNavigate,
 } from "react-router-dom";
 
+import "maplibre-gl/dist/maplibre-gl.css";
+
+maplibregl.setWorkerUrl(workerUrl);
 
 
 // ============================================================
@@ -43,16 +42,17 @@ const BOOKING_URL =
 const MAPTILER_KEY =
     import.meta.env.VITE_MAPTILER_KEY?.trim();
 
-console.log("MAPTILER KEY PRESENT:", Boolean(MAPTILER_KEY));
-console.log(
-    "MAPTILER KEY LENGTH:",
-    MAPTILER_KEY?.length
-);
+if (!API_BASE_URL) {
+    console.error(
+        "VITE_API_URL is missing. Add it to .env or Vercel Environment Variables."
+    );
+}
 
-console.log(
-    "MAP STYLE URL:",
-    `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`
-);
+if (!MAPTILER_KEY) {
+    console.error(
+        "VITE_MAPTILER_KEY is missing. Add it to .env or Vercel Environment Variables."
+    );
+}
 
 
 // ============================================================
@@ -487,6 +487,167 @@ const getBrowserPosition = () => {
     );
 };
 
+
+// ============================================================
+// STATION DETAILS HELPERS
+// ============================================================
+
+const getDetailsPayload = (details) => {
+    if (!details || typeof details !== "object") {
+        return null;
+    }
+
+    if (
+        details.data &&
+        typeof details.data === "object" &&
+        !Array.isArray(details.data)
+    ) {
+        return details.data;
+    }
+
+    return details;
+};
+
+const getConnectorList = (...sources) => {
+    for (const source of sources) {
+        const payload = getDetailsPayload(source);
+
+        if (!payload) {
+            continue;
+        }
+
+        const candidates = [
+            payload.connectorAvailability,
+            payload.connectors,
+            payload.connectorAvailabilities,
+            payload.chargerAvailability,
+            payload.chargerAvailabilities,
+        ];
+
+        for (const candidate of candidates) {
+            if (Array.isArray(candidate)) {
+                return candidate;
+            }
+        }
+    }
+
+    return [];
+};
+
+const getConnectorWait = (connector) => {
+    const candidates = [
+        connector?.waitingTimeMinutes,
+        connector?.waitingTime,
+        connector?.estimatedWaitingTime,
+        connector?.estimatedWaitMinutes,
+        connector?.waitTime,
+        connector?.queueWaitTime,
+    ];
+
+    for (const value of candidates) {
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+            continue;
+        }
+
+        const number = Number(value);
+
+        if (Number.isFinite(number)) {
+            return number;
+        }
+    }
+
+    return null;
+};
+
+const getDetailsDistance = (...sources) => {
+    for (const source of sources) {
+        const payload = getDetailsPayload(source);
+
+        const value =
+            payload?.distanceKm ??
+            payload?.drivingDistanceKm ??
+            payload?.distance ??
+            null;
+
+        if (
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+        ) {
+            return value;
+        }
+    }
+
+    return null;
+};
+
+const getDetailsDriveTime = (...sources) => {
+    for (const source of sources) {
+        const payload = getDetailsPayload(source);
+
+        const value =
+            payload?.estimatedDriveTimeMinutes ??
+            payload?.estimatedTravelTimeMinutes ??
+            payload?.drivingEtaMinutes ??
+            payload?.travelTimeMinutes ??
+            payload?.etaMinutes ??
+            null;
+
+        if (
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+        ) {
+            return value;
+        }
+    }
+
+    return null;
+};
+
+const getStationCoordinatesText = (station) => {
+    const latitude = Number(
+        station?.latitude ??
+        station?.lat
+    );
+
+    const longitude = Number(
+        station?.longitude ??
+        station?.lng ??
+        station?.lon
+    );
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+    ) {
+        return "—";
+    }
+
+    return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+};
+
+const formatMinutes = (value) => {
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "—";
+    }
+
+    const number = Number(value);
+
+    if (!Number.isFinite(number) || number < 0) {
+        return "—";
+    }
+
+    return `${number} min`;
+};
 
 // ============================================================
 // MAIN COMPONENT
@@ -1053,13 +1214,22 @@ const FindCharger = () => {
         const rawTop = mapRect.top + point.y;
 
         // Keep the larger card inside the viewport horizontally.
-        const halfWidth = 215;
+        const popupHalfWidth = Math.min(410, (window.innerWidth - 40) / 2);
         const left = Math.min(
-            Math.max(rawLeft, halfWidth + 18),
-            window.innerWidth - halfWidth - 18
+            Math.max(rawLeft, popupHalfWidth + 16),
+            window.innerWidth - popupHalfWidth - 16
         );
 
-        setPopupPosition({ left, top: rawTop });
+        // Prefer above the marker. If the marker is too close to the
+        // top of the viewport, render below it instead of clipping the card.
+        const placeBelow = rawTop < 235;
+
+        setPopupPosition({
+            left,
+            top: rawTop,
+            placeBelow,
+            markerX: rawLeft - left,
+        });
     }, [selectedStation]);
 
     useEffect(() => {
@@ -1096,15 +1266,11 @@ const FindCharger = () => {
                     return;
                 }
 
-
                 setSelectedStation(station);
                 setPopupPosition(null);
                 setStationDetails(null);
-
                 setDetailsError("");
-
                 setDetailsLoading(true);
-
 
                 let latitude =
                     userLocation?.latitude ??
@@ -1114,13 +1280,6 @@ const FindCharger = () => {
                     userLocation?.longitude ??
                     null;
 
-
-                /*
-                 * We can still show station details
-                 * if location isn't available.
-                 *
-                 * Distance simply becomes null.
-                 */
                 try {
 
                     const data =
@@ -1145,9 +1304,94 @@ const FindCharger = () => {
                             }
                         );
 
+                    const details =
+                        getDetailsPayload(data) || {};
+
+                    /*
+                     * The station DTO already contains the complete
+                     * station card payload:
+                     *
+                     * id
+                     * stationName
+                     * address
+                     * latitude
+                     * longitude
+                     * pricePerKwh
+                     * rating
+                     * distanceKm
+                     * estimatedDriveTimeMinutes
+                     * connectorAvailability[]
+                     *
+                     * Merge the station DTO with the details response so
+                     * we never lose those fields when the details endpoint
+                     * returns only distance-related information.
+                     */
+                    const mergedDetails = {
+                        ...station,
+                        ...details,
+
+                        id:
+                            details.id ??
+                            station.id,
+
+                        stationName:
+                            details.stationName ??
+                            station.stationName,
+
+                        address:
+                            details.address ??
+                            station.address,
+
+                        latitude:
+                            details.latitude ??
+                            station.latitude,
+
+                        longitude:
+                            details.longitude ??
+                            station.longitude,
+
+                        pricePerKwh:
+                            details.pricePerKwh ??
+                            station.pricePerKwh,
+
+                        rating:
+                            details.rating ??
+                            station.rating,
+
+                        distanceKm:
+                            details.distanceKm ??
+                            details.drivingDistanceKm ??
+                            station.distanceKm,
+
+                        estimatedDriveTimeMinutes:
+                            details.estimatedDriveTimeMinutes ??
+                            details.estimatedTravelTimeMinutes ??
+                            details.drivingEtaMinutes ??
+                            station.estimatedDriveTimeMinutes,
+
+                        connectorAvailability:
+                            Array.isArray(
+                                details.connectorAvailability
+                            )
+                                ? details.connectorAvailability
+                                : Array.isArray(
+                                    station.connectorAvailability
+                                )
+                                    ? station.connectorAvailability
+                                    : Array.isArray(
+                                        details.connectors
+                                    )
+                                        ? details.connectors
+                                        : [],
+                    };
+
+                    console.log(
+                        "Station card data:",
+                        mergedDetails
+                    );
 
                     setStationDetails(
-                        data
+                        mergedDetails
                     );
 
                 } catch (error) {
@@ -1157,11 +1401,19 @@ const FindCharger = () => {
                         error
                     );
 
-
-                    setDetailsError(
-                        error.message ||
-                        "Unable to load station details."
+                    /*
+                     * Even if the secondary station-details endpoint
+                     * fails, the /api/stations DTO still contains the
+                     * information needed to populate the card.
+                     *
+                     * Keep the station selected and render its complete
+                     * DTO instead of replacing the card with an error.
+                     */
+                    setStationDetails(
+                        station
                     );
+
+                    setDetailsError("");
 
                 } finally {
 
@@ -2276,12 +2528,14 @@ const FindCharger = () => {
                 .fc-react-popup {
                     position: fixed;
                     z-index: 2000;
-                    width: 430px;
-                    max-width: calc(100vw - 36px);
-                    max-height: calc(100vh - 36px);
+                    width: 820px;
+                    min-width: 760px;
+                    min-height: 560px;
+                    max-width: calc(100vw - 32px);
+                    max-height: min(820px, calc(100vh - 32px));
                     overflow-y: auto;
                     overscroll-behavior: contain;
-                    transform: translate(-50%, calc(-100% - 18px));
+                    transform: translate(-50%, calc(-100% - 12px));
                     border: 1px solid #e1e8ed;
                     border-radius: 20px;
                     background: white;
@@ -2294,11 +2548,11 @@ const FindCharger = () => {
                 @keyframes fcPopupIn {
                     from {
                         opacity: 0;
-                        transform: translate(-50%, calc(-100% - 10px)) scale(.97);
+                        transform: translate(-50%, calc(-100% - 6px)) scale(.97);
                     }
                     to {
                         opacity: 1;
-                        transform: translate(-50%, calc(-100% - 18px)) scale(1);
+                        transform: translate(-50%, calc(-100% - 12px)) scale(1);
                     }
                 }
 
@@ -2313,7 +2567,7 @@ const FindCharger = () => {
 
                 .fc-react-popup-arrow {
                     position: absolute;
-                    left: 50%;
+                    left: var(--popup-arrow-x, 50%);
                     bottom: -8px;
                     width: 16px;
                     height: 16px;
@@ -2321,6 +2575,34 @@ const FindCharger = () => {
                     background: white;
                     border-right: 1px solid #e1e8ed;
                     border-bottom: 1px solid #e1e8ed;
+                }
+
+                .fc-react-popup.is-below {
+                    transform: translate(-50%, 12px);
+                }
+
+                @keyframes fcPopupInBelow {
+                    from {
+                        opacity: 0;
+                        transform: translate(-50%, 6px) scale(.97);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translate(-50%, 12px) scale(1);
+                    }
+                }
+
+                .fc-react-popup.is-below {
+                    animation: fcPopupInBelow .22s ease both;
+                }
+
+                .fc-react-popup.is-below .fc-react-popup-arrow {
+                    top: -8px;
+                    bottom: auto;
+                    border-right: none;
+                    border-bottom: none;
+                    border-left: 1px solid #e1e8ed;
+                    border-top: 1px solid #e1e8ed;
                 }
 
                 .fc-react-popup-close {
@@ -2346,7 +2628,98 @@ const FindCharger = () => {
 
                 .fc-react-popup .fc-popup {
                     width: 100%;
+                    min-height: 560px;
                     box-sizing: border-box;
+                    padding: 32px 34px 30px;
+                }
+
+                .fc-station-info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 9px;
+                    margin-top: 14px;
+                }
+
+                .fc-station-info {
+                    padding: 11px 12px;
+                    border-radius: 10px;
+                    background: #f7f9fa;
+                    border: 1px solid #edf1f3;
+                }
+
+                .fc-station-info-label {
+                    color: #8a9aaa;
+                    font-size: 10px;
+                    text-transform: uppercase;
+                    letter-spacing: .05em;
+                    font-weight: 800;
+                }
+
+                .fc-station-info-value {
+                    margin-top: 4px;
+                    color: #17344b;
+                    font-size: 12px;
+                    font-weight: 750;
+                    word-break: break-word;
+                }
+
+                .fc-connector {
+                    padding: 15px 0;
+                    border-bottom: 1px solid #edf1f4;
+                }
+
+                .fc-connector:last-child {
+                    border-bottom: none;
+                }
+
+                .fc-connector-name {
+                    font-size: 15px;
+                    font-weight: 850;
+                }
+
+                .fc-connector-stats {
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 7px;
+                    margin-top: 9px;
+                }
+
+                .fc-connector-stat {
+                    padding: 9px 10px;
+                    border-radius: 9px;
+                    font-size: 11px;
+                    font-weight: 800;
+                    text-align: center;
+                }
+
+                .fc-queue-row {
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    gap: 16px;
+                    align-items: center;
+                    padding: 11px 0;
+                    font-size: 13px;
+                }
+
+                .fc-queue-time {
+                    padding: 7px 10px;
+                    border-radius: 9px;
+                    background: #e9faef;
+                    color: #008c35;
+                    font-weight: 850;
+                    white-space: nowrap;
+                }
+
+                .fc-queue-time.unavailable {
+                    background: #edf0f2;
+                    color: #66737d;
+                }
+
+                .fc-queue-note {
+                    margin-top: 9px;
+                    color: #8a9aaa;
+                    font-size: 11px;
+                    line-height: 1.4;
                 }
 
 
@@ -2550,12 +2923,12 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-name {
-                    font-size: 20px;
+                    font-size: 24px;
                     font-weight: 800;
                 }
 
                 .fc-popup-address {
-                    margin-top: 5px;
+                    margin-top: 7px;
                     color: #7c91a3;
                     font-size: 12px;
                     line-height: 1.4;
@@ -2569,7 +2942,7 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-pill {
-                    padding: 8px 11px;
+                    padding: 10px 13px;
                     border-radius: 9px;
                     background: #f4f7f9;
                     color: #4e6579;
@@ -2657,7 +3030,17 @@ const FindCharger = () => {
                     color: #8a98a3;
                 }
 
-                .fc-popup-actions {
+                .fc-queue-note {
+                margin-top: 14px;
+                padding: 10px 12px;
+                border-radius: 10px;
+                background: #f0fdf4;
+                color: #64748b;
+                font-size: 11px;
+                line-height: 1.45;
+            }
+
+            .fc-popup-actions {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 8px;
@@ -2665,7 +3048,7 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-button {
-                    height: 46px;
+                    height: 52px;
                     border: none;
                     border-radius: 10px;
                     cursor: pointer;
@@ -3173,8 +3556,19 @@ const FindCharger = () => {
                     }
 
                     .fc-react-popup {
-                        width: min(430px, calc(100vw - 24px));
+                        width: calc(100vw - 24px);
+                        min-width: 0;
+                        min-height: 0;
+                        max-width: calc(100vw - 24px);
                         max-height: calc(100vh - 24px);
+                    }
+
+                    .fc-station-info-grid {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .fc-connector-stats {
+                        grid-template-columns: 1fr 1fr;
                     }
                 }
 
@@ -3542,10 +3936,21 @@ const FindCharger = () => {
 
             {selectedStation && popupPosition && (
                 <div
-                    className="fc-react-popup"
+                    className={`fc-react-popup ${
+                        popupPosition.placeBelow
+                            ? "is-below"
+                            : ""
+                    }`}
                     style={{
                         left: popupPosition.left,
                         top: popupPosition.top,
+                        "--popup-arrow-x": `${Math.max(
+                            28,
+                            Math.min(
+                                792,
+                                popupPosition.markerX
+                            )
+                        )}px`,
                     }}
                 >
                     <div className="fc-react-popup-arrow" />
@@ -3565,6 +3970,7 @@ const FindCharger = () => {
                     </button>
 
                     <div className="fc-popup">
+
                         {detailsLoading && (
                             <div className="fc-loading">
                                 <span className="fc-spinner" />
@@ -3572,155 +3978,409 @@ const FindCharger = () => {
                             </div>
                         )}
 
-                        {!detailsLoading && detailsError && (
-                            <div className="fc-error">{detailsError}</div>
-                        )}
+                        {!detailsLoading &&
+                            stationDetails && (
+                                <>
+                                    {(() => {
+                                        const details =
+                                            getDetailsPayload(
+                                                stationDetails
+                                            ) ||
+                                            {};
 
-                        {!detailsLoading && !detailsError && stationDetails && (
-                            <>
-                                <div className="fc-popup-header">
-                                    <div>
-                                        <div className="fc-popup-name">
-                                            {selectedStation.stationName || "Charging Station"}
-                                        </div>
-                                        <div className="fc-popup-address">
-                                            {selectedStation.address || "Address unavailable"}
-                                        </div>
-                                    </div>
-
-                                    <span className={`fc-status ${
-                                        isStationActive(selectedStation) ? "active" : "inactive"
-                                    }`}>
-                                        {isStationActive(selectedStation) ? "ACTIVE" : "INACTIVE"}
-                                    </span>
-                                </div>
-
-                                <div className="fc-popup-summary">
-                                    <span className="fc-popup-pill">⭐ {selectedStation.rating ?? "—"}</span>
-                                    <span className="fc-popup-pill">₹{selectedStation.pricePerKwh ?? "—"}/kWh</span>
-                                    <span className="fc-popup-pill">
-                                        {formatDistance(
-                                            stationDetails.drivingDistanceKm ??
-                                            stationDetails.distanceKm ??
-                                            stationDetails.distance
-                                        )}
-                                    </span>
-                                    <span className="fc-popup-pill">
-                                        {stationDetails.estimatedTravelTimeMinutes != null
-                                            ? `~${stationDetails.estimatedTravelTimeMinutes} min drive`
-                                            : stationDetails.drivingEtaMinutes != null
-                                                ? `~${stationDetails.drivingEtaMinutes} min drive`
-                                                : "Drive time —"}
-                                    </span>
-                                </div>
-
-                                <div className="fc-connector-section">
-                                    <div className="fc-popup-section-title">CONNECTORS</div>
-                                    {(stationDetails.connectors || []).length === 0 ? (
-                                        <div className="fc-popup-muted">Connector information unavailable.</div>
-                                    ) : (
-                                        stationDetails.connectors.map((connector, index) => {
-                                            const available = Number(connector.available ?? 0);
-                                            const busy = Number(connector.busy ?? 0);
-                                            const unavailable = Number(connector.unavailable ?? 0);
-
-                                            return (
-                                                <div
-                                                    className="fc-connector"
-                                                    key={`${connector.connectorType ?? "connector"}-${index}`}
-                                                >
-                                                    <div className="fc-connector-name">
-                                                        {formatConnectorName(connector.connectorType)}
-                                                    </div>
-                                                    <div className="fc-connector-stats">
-                                                        <span className="fc-connector-stat available">🟢 {available} Available</span>
-                                                        <span className="fc-connector-stat busy">🟠 {busy} Busy</span>
-                                                        <span className="fc-connector-stat unavailable">⚫ {unavailable} Unavailable</span>
-                                                    </div>
-                                                </div>
+                                        /*
+                                         * Prefer the exact station DTO
+                                         * fields requested for the card.
+                                         * Use details as a fallback for
+                                         * values calculated by the
+                                         * secondary endpoint.
+                                         */
+                                        const connectors =
+                                            getConnectorList(
+                                                details,
+                                                selectedStation
                                             );
-                                        })
-                                    )}
-                                </div>
 
-                                <div className="fc-queue">
-                                    <div className="fc-popup-section-title">QUEUE STATUS</div>
-                                    {(stationDetails.connectors || []).length === 0 ? (
-                                        <div className="fc-popup-muted">Queue information unavailable.</div>
-                                    ) : (
-                                        stationDetails.connectors.map((connector, index) => {
-                                            const available = Number(connector.available ?? 0);
-                                            const busy = Number(connector.busy ?? 0);
+                                        const distance =
+                                            getDetailsDistance(
+                                                details,
+                                                selectedStation
+                                            );
 
-                                            const rawWait =
-                                                connector.waitingTimeMinutes ??
-                                                connector.waitingTime ??
-                                                connector.waitTime ??
-                                                connector.queueWaitTime;
+                                        const driveTime =
+                                            getDetailsDriveTime(
+                                                details,
+                                                selectedStation
+                                            );
 
-                                            const wait =
-                                                rawWait === null ||
-                                                rawWait === undefined ||
-                                                rawWait === ""
-                                                    ? null
-                                                    : Number(rawWait);
+                                        const stationId =
+                                            details.id ??
+                                            selectedStation.id;
 
-                                            let queueText;
+                                        const latitude =
+                                            details.latitude ??
+                                            selectedStation.latitude;
 
-                                            if (available > 0) {
-                                                queueText = "Ready now";
-                                            } else if (Number.isFinite(wait) && wait >= 0) {
-                                                queueText =
-                                                    wait === 0
-                                                        ? "Ready now"
-                                                        : `~${wait} min`;
-                                            } else if (busy > 0) {
-                                                queueText = "Busy";
-                                            } else {
-                                                queueText = "Unavailable";
-                                            }
+                                        const longitude =
+                                            details.longitude ??
+                                            selectedStation.longitude;
 
-                                            return (
-                                                <div
-                                                    className="fc-queue-row"
-                                                    key={`queue-${connector.connectorType ?? "connector"}-${index}`}
-                                                >
-                                                    <span>{formatConnectorName(connector.connectorType)}</span>
+                                        return (
+                                            <>
+                                                <div className="fc-popup-header">
+                                                    <div>
+                                                        <div className="fc-popup-name">
+                                                            {
+                                                                details.stationName ??
+                                                                selectedStation.stationName ??
+                                                                "Charging Station"
+                                                            }
+                                                        </div>
+
+                                                        <div className="fc-popup-address">
+                                                            {
+                                                                details.address ??
+                                                                selectedStation.address ??
+                                                                "Address unavailable"
+                                                            }
+                                                        </div>
+                                                    </div>
+
                                                     <span
-                                                        className={`fc-queue-time ${
-                                                            queueText === "Unavailable"
-                                                                ? "unavailable"
-                                                                : ""
+                                                        className={`fc-status ${
+                                                            isStationActive(
+                                                                selectedStation
+                                                            )
+                                                                ? "active"
+                                                                : "inactive"
                                                         }`}
                                                     >
-                                                        {queueText}
+                                                        {isStationActive(
+                                                            selectedStation
+                                                        )
+                                                            ? "ACTIVE"
+                                                            : "INACTIVE"}
                                                     </span>
                                                 </div>
-                                            );
-                                        })
-                                    )}
-                                </div>
 
-                                <div className="fc-popup-actions">
-                                    <button
-                                        type="button"
-                                        className="fc-popup-button secondary"
-                                        onClick={() => openBookingModal(selectedStation)}
-                                        disabled={!isStationActive(selectedStation)}
-                                    >
-                                        Join Queue
-                                    </button>
+                                                <div className="fc-popup-summary">
+                                                    <span className="fc-popup-pill">
+                                                        ⭐{" "}
+                                                        {details.rating ??
+                                                            selectedStation.rating ??
+                                                            "—"}
+                                                    </span>
 
-                                    <button
-                                        type="button"
-                                        className="fc-popup-button primary"
-                                        onClick={() => focusStation(selectedStation)}
-                                    >
-                                        Directions
-                                    </button>
+                                                    <span className="fc-popup-pill">
+                                                        ₹
+                                                        {details.pricePerKwh ??
+                                                            selectedStation.pricePerKwh ??
+                                                            "—"}
+                                                        /kWh
+                                                    </span>
+
+                                                    <span className="fc-popup-pill">
+                                                        📍{" "}
+                                                        {formatDistance(
+                                                            distance
+                                                        )}
+                                                    </span>
+
+                                                    <span className="fc-popup-pill">
+                                                        🚗{" "}
+                                                        {driveTime != null
+                                                            ? `~${driveTime} min drive`
+                                                            : "Drive time —"}
+                                                    </span>
+                                                </div>
+
+                                                <div className="fc-station-info-grid">
+                                                    <div className="fc-station-info">
+                                                        <div className="fc-station-info-label">
+                                                            Station ID
+                                                        </div>
+                                                        <div className="fc-station-info-value">
+                                                            {stationId ?? "—"}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="fc-station-info">
+                                                        <div className="fc-station-info-label">
+                                                            Latitude
+                                                        </div>
+                                                        <div className="fc-station-info-value">
+                                                            {Number.isFinite(
+                                                                Number(
+                                                                    latitude
+                                                                )
+                                                            )
+                                                                ? Number(
+                                                                    latitude
+                                                                ).toFixed(6)
+                                                                : "—"}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="fc-station-info">
+                                                        <div className="fc-station-info-label">
+                                                            Longitude
+                                                        </div>
+                                                        <div className="fc-station-info-value">
+                                                            {Number.isFinite(
+                                                                Number(
+                                                                    longitude
+                                                                )
+                                                            )
+                                                                ? Number(
+                                                                    longitude
+                                                                ).toFixed(6)
+                                                                : "—"}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="fc-connector-section">
+                                                    <div className="fc-popup-section-title">
+                                                        CONNECTOR AVAILABILITY
+                                                    </div>
+
+                                                    {connectors.length ===
+                                                    0 ? (
+                                                        <div className="fc-popup-muted">
+                                                            No connector availability
+                                                            data returned by the
+                                                            station API.
+                                                        </div>
+                                                    ) : (
+                                                        connectors.map(
+                                                            (
+                                                                connector,
+                                                                index
+                                                            ) => {
+                                                                const available =
+                                                                    Number(
+                                                                        connector.available ??
+                                                                            0
+                                                                    );
+
+                                                                const busy =
+                                                                    Number(
+                                                                        connector.busy ??
+                                                                            0
+                                                                    );
+
+                                                                const unavailable =
+                                                                    Number(
+                                                                        connector.unavailable ??
+                                                                            0
+                                                                    );
+
+                                                                const waiting =
+                                                                    getConnectorWait(
+                                                                        connector
+                                                                    );
+
+                                                                return (
+                                                                    <div
+                                                                        className="fc-connector"
+                                                                        key={`${
+                                                                            connector.connectorType ??
+                                                                            "connector"
+                                                                        }-${index}`}
+                                                                    >
+                                                                        <div className="fc-connector-name">
+                                                                            {formatConnectorName(
+                                                                                connector.connectorType
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="fc-connector-stats">
+                                                                            <span className="fc-connector-stat available">
+                                                                                🟢{" "}
+                                                                                {
+                                                                                    available
+                                                                                }{" "}
+                                                                                Available
+                                                                            </span>
+
+                                                                            <span className="fc-connector-stat busy">
+                                                                                🟠{" "}
+                                                                                {
+                                                                                    busy
+                                                                                }{" "}
+                                                                                Busy
+                                                                            </span>
+
+                                                                            <span className="fc-connector-stat unavailable">
+                                                                                ⚫{" "}
+                                                                                {
+                                                                                    unavailable
+                                                                                }{" "}
+                                                                                Unavailable
+                                                                            </span>
+
+                                                                            <span
+                                                                                className={`fc-connector-stat ${
+                                                                                    waiting ===
+                                                                                        null ||
+                                                                                    waiting <
+                                                                                        0
+                                                                                        ? "unavailable"
+                                                                                        : "available"
+                                                                                }`}
+                                                                            >
+                                                                                ⏱️{" "}
+                                                                                {formatMinutes(
+                                                                                    waiting
+                                                                                )}{" "}
+                                                                                Wait
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        )
+                                                    )}
+                                                </div>
+
+                                                <div className="fc-queue">
+                                                    <div className="fc-popup-section-title">
+                                                        QUEUE STATUS
+                                                    </div>
+
+                                                    {connectors.length ===
+                                                    0 ? (
+                                                        <div className="fc-popup-muted">
+                                                            Queue information
+                                                            unavailable because
+                                                            connector availability
+                                                            was not returned.
+                                                        </div>
+                                                    ) : (
+                                                        connectors.map(
+                                                            (
+                                                                connector,
+                                                                index
+                                                            ) => {
+                                                                const available =
+                                                                    Number(
+                                                                        connector.available ??
+                                                                            0
+                                                                    );
+
+                                                                const waiting =
+                                                                    getConnectorWait(
+                                                                        connector
+                                                                    );
+
+                                                                let queueText;
+
+                                                                if (
+                                                                    waiting !==
+                                                                        null &&
+                                                                    waiting >=
+                                                                        0
+                                                                ) {
+                                                                    queueText =
+                                                                        waiting ===
+                                                                            0
+                                                                            ? "0 min • Ready now"
+                                                                            : `~${waiting} min`;
+                                                                } else if (
+                                                                    available >
+                                                                    0
+                                                                ) {
+                                                                    queueText =
+                                                                        "0 min • Ready now";
+                                                                } else {
+                                                                    queueText =
+                                                                        "Wait time unavailable";
+                                                                }
+
+                                                                return (
+                                                                    <div
+                                                                        className="fc-queue-row"
+                                                                        key={`queue-${
+                                                                            connector.connectorType ??
+                                                                            "connector"
+                                                                        }-${index}`}
+                                                                    >
+                                                                        <span>
+                                                                            {formatConnectorName(
+                                                                                connector.connectorType
+                                                                            )}
+                                                                        </span>
+
+                                                                        <span
+                                                                            className={`fc-queue-time ${
+                                                                                queueText ===
+                                                                                "Wait time unavailable"
+                                                                                    ? "unavailable"
+                                                                                    : ""
+                                                                            }`}
+                                                                        >
+                                                                            {queueText}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                        )
+                                                    )}
+
+                                                    {connectors.length > 0 && (
+                                                        <div className="fc-queue-note">
+                                                            Waiting time comes
+                                                            directly from the
+                                                            connector
+                                                            availability data
+                                                            returned by the API.
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="fc-popup-actions">
+                                                    <button
+                                                        type="button"
+                                                        className="fc-popup-button secondary"
+                                                        onClick={() =>
+                                                            openBookingModal(
+                                                                selectedStation
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            !isStationActive(
+                                                                selectedStation
+                                                            )
+                                                        }
+                                                    >
+                                                        Join Queue
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        className="fc-popup-button primary"
+                                                        onClick={() =>
+                                                            focusStation(
+                                                                selectedStation
+                                                            )
+                                                        }
+                                                    >
+                                                        Directions
+                                                    </button>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
+                                </>
+                            )}
+
+                        {!detailsLoading &&
+                            !stationDetails && (
+                                <div className="fc-loading">
+                                    <span className="fc-spinner" />
+                                    Preparing station card...
                                 </div>
-                            </>
-                        )}
+                            )}
                     </div>
                 </div>
             )}
