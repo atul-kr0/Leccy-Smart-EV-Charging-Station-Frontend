@@ -37,7 +37,18 @@ const BOOKING_URL =
     `${API_BASE_URL}/api/bookings`;
 
 const MAPTILER_KEY =
-    import.meta.env.VITE_MAPTILER_KEY;
+    import.meta.env.VITE_MAPTILER_KEY?.trim();
+
+console.log("MAPTILER KEY PRESENT:", Boolean(MAPTILER_KEY));
+console.log(
+    "MAPTILER KEY LENGTH:",
+    MAPTILER_KEY?.length
+);
+
+console.log(
+    "MAP STYLE URL:",
+    `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`
+);
 
 
 // ============================================================
