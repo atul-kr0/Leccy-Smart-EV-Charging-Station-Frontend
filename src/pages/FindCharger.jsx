@@ -395,12 +395,24 @@ const getDrivingDistance = (item) =>
     item?.distance ??
     null;
 
-const getDrivingEta = (item) =>
-    item?.estimatedTravelTimeMinutes ??
-    item?.estimatedDriveTimeMinutes ??
-    item?.travelTimeMinutes ??
-    item?.etaMinutes ??
-    null;
+const getDrivingEta = (item) => {
+    const value =
+        item?.estimatedDriveTimeMinutes ??
+        item?.estimatedTravelTimeMinutes ??
+        item?.drivingEtaMinutes ??
+        item?.travelTimeMinutes ??
+        item?.etaMinutes ??
+        null;
+
+    if (value === null || value === undefined || value === "") {
+        return null;
+    }
+
+    const number = Number(value);
+    return Number.isFinite(number) && number >= 0
+        ? number
+        : null;
+};
 
 
 // ============================================================
@@ -1214,7 +1226,7 @@ const FindCharger = () => {
         const rawTop = mapRect.top + point.y;
 
         // Keep the larger card inside the viewport horizontally.
-        const popupHalfWidth = Math.min(410, (window.innerWidth - 40) / 2);
+        const popupHalfWidth = Math.min(320, (window.innerWidth - 40) / 2);
         const left = Math.min(
             Math.max(rawLeft, popupHalfWidth + 16),
             window.innerWidth - popupHalfWidth - 16
@@ -1840,7 +1852,38 @@ const FindCharger = () => {
     // REFRESH
     // ========================================================
 
-    const refreshMap =
+        // ========================================================
+    // GOOGLE MAPS DIRECTIONS
+    // ========================================================
+
+    const openDirections = (station) => {
+
+        const coordinates =
+            getCoordinates(station);
+
+        if (!coordinates) {
+            console.error(
+                "Unable to open Google Maps directions: station coordinates are missing.",
+                station
+            );
+            return;
+        }
+
+        const destination =
+            `${coordinates.latitude},${coordinates.longitude}`;
+
+        const googleMapsUrl =
+            `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+
+        window.open(
+            googleMapsUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    };
+
+
+const refreshMap =
         async () => {
 
             await loadStations();
@@ -1882,7 +1925,12 @@ const FindCharger = () => {
     const openBookingModal =
         async (station) => {
 
-            setBookingStation(
+                        setSelectedStation(null);
+            setStationDetails(null);
+            setDetailsError("");
+            setPopupPosition(null);
+
+setBookingStation(
                 station
             );
 
@@ -2528,11 +2576,11 @@ const FindCharger = () => {
                 .fc-react-popup {
                     position: fixed;
                     z-index: 2000;
-                    width: 820px;
-                    min-width: 760px;
-                    min-height: 560px;
-                    max-width: calc(100vw - 32px);
-                    max-height: min(820px, calc(100vh - 32px));
+                    width: 640px;
+                    min-width: 0;
+                    min-height: 0;
+                    max-width: min(640px, calc(100vw - 32px));
+                    max-height: min(720px, calc(100vh - 32px));
                     overflow-y: auto;
                     overscroll-behavior: contain;
                     transform: translate(-50%, calc(-100% - 12px));
@@ -2628,43 +2676,13 @@ const FindCharger = () => {
 
                 .fc-react-popup .fc-popup {
                     width: 100%;
-                    min-height: 560px;
+                    min-height: 0;
                     box-sizing: border-box;
-                    padding: 32px 34px 30px;
-                }
-
-                .fc-station-info-grid {
-                    display: grid;
-                    grid-template-columns: repeat(3, minmax(0, 1fr));
-                    gap: 9px;
-                    margin-top: 14px;
-                }
-
-                .fc-station-info {
-                    padding: 11px 12px;
-                    border-radius: 10px;
-                    background: #f7f9fa;
-                    border: 1px solid #edf1f3;
-                }
-
-                .fc-station-info-label {
-                    color: #8a9aaa;
-                    font-size: 10px;
-                    text-transform: uppercase;
-                    letter-spacing: .05em;
-                    font-weight: 800;
-                }
-
-                .fc-station-info-value {
-                    margin-top: 4px;
-                    color: #17344b;
-                    font-size: 12px;
-                    font-weight: 750;
-                    word-break: break-word;
+                    padding: 26px 28px 24px;
                 }
 
                 .fc-connector {
-                    padding: 15px 0;
+                    padding: 12px 0;
                     border-bottom: 1px solid #edf1f4;
                 }
 
@@ -2673,7 +2691,7 @@ const FindCharger = () => {
                 }
 
                 .fc-connector-name {
-                    font-size: 15px;
+                    font-size: 14px;
                     font-weight: 850;
                 }
 
@@ -2713,13 +2731,6 @@ const FindCharger = () => {
                 .fc-queue-time.unavailable {
                     background: #edf0f2;
                     color: #66737d;
-                }
-
-                .fc-queue-note {
-                    margin-top: 9px;
-                    color: #8a9aaa;
-                    font-size: 11px;
-                    line-height: 1.4;
                 }
 
 
@@ -2923,7 +2934,7 @@ const FindCharger = () => {
                 }
 
                 .fc-popup-name {
-                    font-size: 24px;
+                    font-size: 22px;
                     font-weight: 800;
                 }
 
@@ -2951,7 +2962,7 @@ const FindCharger = () => {
                 }
 
                 .fc-connector-section {
-                    margin-top: 19px;
+                    margin-top: 15px;
                     padding-top: 16px;
                     border-top: 1px solid #e8edf1;
                 }
@@ -3008,7 +3019,7 @@ const FindCharger = () => {
                 }
 
                 .fc-queue {
-                    margin-top: 17px;
+                    margin-top: 15px;
                     padding-top: 16px;
                     border-top: 1px solid #e8edf1;
                 }
@@ -3029,16 +3040,6 @@ const FindCharger = () => {
                 .fc-queue-time.unavailable {
                     color: #8a98a3;
                 }
-
-                .fc-queue-note {
-                margin-top: 14px;
-                padding: 10px 12px;
-                border-radius: 10px;
-                background: #f0fdf4;
-                color: #64748b;
-                font-size: 11px;
-                line-height: 1.45;
-            }
 
             .fc-popup-actions {
                     display: grid;
@@ -3563,10 +3564,6 @@ const FindCharger = () => {
                         max-height: calc(100vh - 24px);
                     }
 
-                    .fc-station-info-grid {
-                        grid-template-columns: 1fr;
-                    }
-
                     .fc-connector-stats {
                         grid-template-columns: 1fr 1fr;
                     }
@@ -3947,7 +3944,7 @@ const FindCharger = () => {
                         "--popup-arrow-x": `${Math.max(
                             28,
                             Math.min(
-                                792,
+                                612,
                                 popupPosition.markerX
                             )
                         )}px`,
@@ -4012,18 +4009,6 @@ const FindCharger = () => {
                                                 details,
                                                 selectedStation
                                             );
-
-                                        const stationId =
-                                            details.id ??
-                                            selectedStation.id;
-
-                                        const latitude =
-                                            details.latitude ??
-                                            selectedStation.latitude;
-
-                                        const longitude =
-                                            details.longitude ??
-                                            selectedStation.longitude;
 
                                         return (
                                             <>
@@ -4092,51 +4077,6 @@ const FindCharger = () => {
                                                             ? `~${driveTime} min drive`
                                                             : "Drive time —"}
                                                     </span>
-                                                </div>
-
-                                                <div className="fc-station-info-grid">
-                                                    <div className="fc-station-info">
-                                                        <div className="fc-station-info-label">
-                                                            Station ID
-                                                        </div>
-                                                        <div className="fc-station-info-value">
-                                                            {stationId ?? "—"}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="fc-station-info">
-                                                        <div className="fc-station-info-label">
-                                                            Latitude
-                                                        </div>
-                                                        <div className="fc-station-info-value">
-                                                            {Number.isFinite(
-                                                                Number(
-                                                                    latitude
-                                                                )
-                                                            )
-                                                                ? Number(
-                                                                    latitude
-                                                                ).toFixed(6)
-                                                                : "—"}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="fc-station-info">
-                                                        <div className="fc-station-info-label">
-                                                            Longitude
-                                                        </div>
-                                                        <div className="fc-station-info-value">
-                                                            {Number.isFinite(
-                                                                Number(
-                                                                    longitude
-                                                                )
-                                                            )
-                                                                ? Number(
-                                                                    longitude
-                                                                ).toFixed(6)
-                                                                : "—"}
-                                                        </div>
-                                                    </div>
                                                 </div>
 
                                                 <div className="fc-connector-section">
@@ -4286,12 +4226,6 @@ const FindCharger = () => {
                                                                             0
                                                                             ? "0 min • Ready now"
                                                                             : `~${waiting} min`;
-                                                                } else if (
-                                                                    available >
-                                                                    0
-                                                                ) {
-                                                                    queueText =
-                                                                        "0 min • Ready now";
                                                                 } else {
                                                                     queueText =
                                                                         "Wait time unavailable";
@@ -4327,15 +4261,6 @@ const FindCharger = () => {
                                                         )
                                                     )}
 
-                                                    {connectors.length > 0 && (
-                                                        <div className="fc-queue-note">
-                                                            Waiting time comes
-                                                            directly from the
-                                                            connector
-                                                            availability data
-                                                            returned by the API.
-                                                        </div>
-                                                    )}
                                                 </div>
 
                                                 <div className="fc-popup-actions">
@@ -4360,7 +4285,7 @@ const FindCharger = () => {
                                                         type="button"
                                                         className="fc-popup-button primary"
                                                         onClick={() =>
-                                                            focusStation(
+                                                            openDirections(
                                                                 selectedStation
                                                             )
                                                         }
