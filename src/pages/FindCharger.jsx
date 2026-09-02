@@ -42,6 +42,29 @@ const BOOKING_URL =
 const MAPTILER_KEY =
     import.meta.env.VITE_MAPTILER_KEY?.trim();
 
+const MAP_STYLES = {
+    streets: {
+        label: "Streets",
+        url: `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`,
+    },
+    satellite: {
+        label: "Satellite",
+        url: `https://api.maptiler.com/maps/satellite-v4/style.json?key=${MAPTILER_KEY}`,
+    },
+    hybrid: {
+        label: "Hybrid",
+        url: `https://api.maptiler.com/maps/hybrid-v4/style.json?key=${MAPTILER_KEY}`,
+    },
+    outdoor: {
+        label: "Outdoor",
+        url: `https://api.maptiler.com/maps/outdoor-v4/style.json?key=${MAPTILER_KEY}`,
+    },
+    topo: {
+        label: "Topographic",
+        url: `https://api.maptiler.com/maps/topo-v4/style.json?key=${MAPTILER_KEY}`,
+    },
+};
+
 if (!API_BASE_URL) {
     console.error(
         "VITE_API_URL is missing. Add it to .env or Vercel Environment Variables."
@@ -691,6 +714,12 @@ const FindCharger = () => {
     const [mapReady, setMapReady] =
         useState(false);
 
+    const [selectedMapStyle, setSelectedMapStyle] =
+        useState("streets");
+
+    const [showMapStylePicker, setShowMapStylePicker] =
+        useState(false);
+
 
     // ========================================================
     // STATIONS
@@ -1064,7 +1093,7 @@ const FindCharger = () => {
                     mapContainerRef.current,
 
                 style:
-                    `https://api.maptiler.com/maps/streets-v4/style.json?key=${MAPTILER_KEY}`,
+                    MAP_STYLES.streets.url,
 
                 center: [
                     77.2090,
@@ -1151,6 +1180,28 @@ const FindCharger = () => {
         };
 
     }, []);
+
+
+    // ========================================================
+    // MAP STYLE
+    // ========================================================
+
+    const changeMapStyle = (styleKey) => {
+        const style = MAP_STYLES[styleKey];
+
+        if (!style || !mapRef.current) {
+            return;
+        }
+
+        if (styleKey === selectedMapStyle) {
+            setShowMapStylePicker(false);
+            return;
+        }
+
+        setSelectedMapStyle(styleKey);
+        setShowMapStylePicker(false);
+        mapRef.current.setStyle(style.url);
+    };
 
 
     // ========================================================
@@ -2773,6 +2824,88 @@ setBookingStation(
                     cursor: wait;
                 }
 
+                .fc-map-style-wrap {
+                    position: relative;
+                }
+
+                .fc-map-style-toggle.active {
+                    color: #00a83b;
+                    border-color: rgba(0,168,59,.35);
+                    background: #f3fcf6;
+                }
+
+                .fc-map-style-glyph {
+                    font-size: 20px;
+                    line-height: 1;
+                    font-weight: 800;
+                    transform: rotate(45deg);
+                }
+
+                .fc-map-style-picker {
+                    position: absolute;
+                    left: 51px;
+                    top: 0;
+                    width: 178px;
+                    padding: 8px;
+                    border: 1px solid rgba(220,229,236,.95);
+                    border-radius: 14px;
+                    background: rgba(255,255,255,.98);
+                    box-shadow: 0 14px 35px rgba(6,36,61,.16);
+                    animation: fcMapStyleIn .16s ease both;
+                }
+
+                .fc-map-style-title {
+                    padding: 6px 8px 8px;
+                    color: #8093a5;
+                    font-size: 10px;
+                    font-weight: 850;
+                    text-transform: uppercase;
+                    letter-spacing: .06em;
+                }
+
+                .fc-map-style-option {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 10px;
+                    border: none;
+                    border-radius: 9px;
+                    padding: 9px 10px;
+                    background: transparent;
+                    color: #06243d;
+                    font-size: 12px;
+                    font-weight: 750;
+                    text-align: left;
+                    cursor: pointer;
+                    transition: .16s ease;
+                }
+
+                .fc-map-style-option:hover {
+                    background: #f4faf6;
+                }
+
+                .fc-map-style-option.selected {
+                    background: #e9faef;
+                    color: #008c35;
+                }
+
+                .fc-map-style-check {
+                    font-size: 14px;
+                    font-weight: 900;
+                }
+
+                @keyframes fcMapStyleIn {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-5px) scale(.98);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0) scale(1);
+                    }
+                }
+
 
                 /* =================================================
                    SEARCH RESULTS PANEL
@@ -3741,6 +3874,63 @@ setBookingStation(
                                 />
 
                             </button>
+
+
+                            <div className="fc-map-style-wrap">
+
+                                <button
+                                    type="button"
+                                    className={
+                                        `fc-map-control fc-map-style-toggle ${
+                                            showMapStylePicker ? "active" : ""
+                                        }`
+                                    }
+                                    title="Change map style"
+                                    onClick={() =>
+                                        setShowMapStylePicker(current => !current)
+                                    }
+                                >
+                                    <span className="fc-map-style-glyph">◈</span>
+                                </button>
+
+
+                                {showMapStylePicker && (
+                                    <div className="fc-map-style-picker">
+                                        <div className="fc-map-style-title">
+                                            Map style
+                                        </div>
+
+                                        {Object.entries(MAP_STYLES).map(
+                                            ([styleKey, style]) => (
+                                                <button
+                                                    type="button"
+                                                    key={styleKey}
+                                                    className={
+                                                        `fc-map-style-option ${
+                                                            selectedMapStyle === styleKey
+                                                                ? "selected"
+                                                                : ""
+                                                        }`
+                                                    }
+                                                    onClick={() =>
+                                                        changeMapStyle(styleKey)
+                                                    }
+                                                >
+                                                    <span>
+                                                        {style.label}
+                                                    </span>
+                                                    {selectedMapStyle === styleKey && (
+                                                        <span className="fc-map-style-check">
+                                                            ✓
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            )
+                                        )}
+                                    </div>
+                                )}
+
+                            </div>
 
                         </div>
 
