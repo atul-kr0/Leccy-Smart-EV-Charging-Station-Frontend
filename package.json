@@ -7,7 +7,10 @@
     "abhay": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "download:vehicle-assets": "node scripts/download-vehicle-assets.mjs",
+    "assets:validate": "node scripts/validate-vehicle-assets.mjs",
+    "assets:verify": "node scripts/validate-vehicle-assets.mjs --files"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -27,6 +30,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "sharp": "^0.34.3"
   }
 }

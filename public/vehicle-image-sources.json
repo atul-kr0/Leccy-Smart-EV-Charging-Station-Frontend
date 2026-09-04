@@ -1,0 +1,1031 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "make": "Audi",
+      "model": "e-tron",
+      "physicalModel": "e-tron",
+      "assetPath": "/vehicles/audi/e-tron.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Audi e-tron front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Audi",
+      "model": "e-tron GT",
+      "physicalModel": "e-tron GT",
+      "assetPath": "/vehicles/audi/e-tron-gt.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:Audi e-tron GT (ZAA-FWEBGS) front.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Audi",
+      "model": "Q8 e-tron",
+      "physicalModel": "Q8 e-tron",
+      "assetPath": "/vehicles/audi/q8-e-tron.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Audi Q8 e-tron front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BMW",
+      "model": "i4",
+      "physicalModel": "i4",
+      "assetPath": "/vehicles/bmw/i4.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BMW i4 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BMW",
+      "model": "i5",
+      "physicalModel": "i5",
+      "assetPath": "/vehicles/bmw/i5.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BMW i5 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BMW",
+      "model": "i7",
+      "physicalModel": "i7",
+      "assetPath": "/vehicles/bmw/i7.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BMW i7 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BMW",
+      "model": "iX",
+      "physicalModel": "iX",
+      "assetPath": "/vehicles/bmw/ix.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:2022 BMW iX front.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BMW",
+      "model": "iX1",
+      "physicalModel": "iX1",
+      "assetPath": "/vehicles/bmw/ix1.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BMW iX1 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BYD",
+      "model": "Atto 3",
+      "physicalModel": "Atto 3",
+      "assetPath": "/vehicles/byd/atto-3.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:2023 BYD Atto 3.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BYD",
+      "model": "e6",
+      "physicalModel": "e6",
+      "assetPath": "/vehicles/byd/e6.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BYD e6 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BYD",
+      "model": "eMAX 7",
+      "physicalModel": "eMAX 7",
+      "assetPath": "/vehicles/byd/emax-7.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BYD eMAX 7 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BYD",
+      "model": "Seal",
+      "physicalModel": "Seal",
+      "assetPath": "/vehicles/byd/seal.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BYD Seal front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "BYD",
+      "model": "Sealion 7",
+      "physicalModel": "Sealion 7",
+      "assetPath": "/vehicles/byd/sealion-7.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "BYD Sealion 7 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Citroen",
+      "model": "eC3",
+      "physicalModel": "eC3",
+      "assetPath": "/vehicles/citroen/ec3.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Citroen eC3 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Hyundai",
+      "model": "Creta EV",
+      "physicalModel": "Creta EV",
+      "assetPath": "/vehicles/hyundai/creta-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Hyundai Creta EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Hyundai",
+      "model": "Ioniq 5",
+      "physicalModel": "Ioniq 5",
+      "assetPath": "/vehicles/hyundai/ioniq-5.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:Hyundai-Ionic-5-front-right.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Jaguar",
+      "model": "I-PACE",
+      "physicalModel": "I-PACE",
+      "assetPath": "/vehicles/jaguar/i-pace.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Jaguar I-PACE front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Kia",
+      "model": "Carens Clavis EV",
+      "physicalModel": "Carens Clavis EV",
+      "assetPath": "/vehicles/kia/carens-clavis-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Kia Carens Clavis EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Kia",
+      "model": "EV6",
+      "physicalModel": "EV6",
+      "assetPath": "/vehicles/kia/ev6.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:Kia-EV6-front-right.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Kia",
+      "model": "EV9",
+      "physicalModel": "EV9",
+      "assetPath": "/vehicles/kia/ev9.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Kia EV9 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Kia",
+      "model": "Syros EV",
+      "physicalModel": "Syros EV",
+      "assetPath": "/vehicles/kia/syros-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Kia Syros EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mahindra",
+      "model": "BE 6",
+      "physicalModel": "BE 6",
+      "assetPath": "/vehicles/mahindra/be-6.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mahindra BE 6 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mahindra",
+      "model": "XEV 9e",
+      "physicalModel": "XEV 9e",
+      "assetPath": "/vehicles/mahindra/xev-9e.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mahindra XEV 9e front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mahindra",
+      "model": "XEV 9S",
+      "physicalModel": "XEV 9S",
+      "assetPath": "/vehicles/mahindra/xev-9s.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mahindra XEV 9S front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mahindra",
+      "model": "XUV 3XO EV",
+      "physicalModel": "XUV 3XO EV",
+      "assetPath": "/vehicles/mahindra/xuv-3xo-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mahindra XUV 3XO EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mahindra",
+      "model": "XUV400",
+      "physicalModel": "XUV400",
+      "assetPath": "/vehicles/mahindra/xuv400.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mahindra XUV400 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Maruti Suzuki",
+      "model": "e Vitara",
+      "physicalModel": "e Vitara",
+      "assetPath": "/vehicles/maruti-suzuki/e-vitara.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Maruti Suzuki e Vitara front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mercedes",
+      "model": "EQA",
+      "physicalModel": "EQA",
+      "assetPath": "/vehicles/mercedes/eqa.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mercedes EQA front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mercedes",
+      "model": "EQB",
+      "physicalModel": "EQB",
+      "assetPath": "/vehicles/mercedes/eqb.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mercedes EQB front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mercedes",
+      "model": "EQS",
+      "physicalModel": "EQS",
+      "assetPath": "/vehicles/mercedes/eqs.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mercedes EQS front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mercedes",
+      "model": "EQS SUV",
+      "physicalModel": "EQS SUV",
+      "assetPath": "/vehicles/mercedes/eqs-suv.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mercedes EQS SUV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "MG",
+      "model": "Comet EV",
+      "physicalModel": "Comet EV",
+      "assetPath": "/vehicles/mg/comet-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "MG Comet EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "MG",
+      "model": "Cyberster",
+      "physicalModel": "Cyberster",
+      "assetPath": "/vehicles/mg/cyberster.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "MG Cyberster front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "MG",
+      "model": "Hector Tomahawk EV",
+      "physicalModel": "Hector Tomahawk EV",
+      "assetPath": "/vehicles/mg/hector-tomahawk-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "MG Hector Tomahawk EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "MG",
+      "model": "M9",
+      "physicalModel": "M9",
+      "assetPath": "/vehicles/mg/m9.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "MG M9 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "MG",
+      "model": "Windsor EV",
+      "physicalModel": "Windsor EV",
+      "assetPath": "/vehicles/mg/windsor-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "MG Windsor EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "MG",
+      "model": "ZS EV",
+      "physicalModel": "ZS EV",
+      "assetPath": "/vehicles/mg/zs-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "MG ZS EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Mini",
+      "model": "Countryman E",
+      "physicalModel": "Countryman E",
+      "assetPath": "/vehicles/mini/countryman-e.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Mini Countryman E front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Porsche",
+      "model": "Taycan",
+      "physicalModel": "Taycan",
+      "assetPath": "/vehicles/porsche/taycan.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Porsche Taycan front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Rolls-Royce",
+      "model": "Spectre",
+      "physicalModel": "Spectre",
+      "assetPath": "/vehicles/rolls-royce/spectre.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Rolls-Royce Spectre front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Smart",
+      "model": "#1 Pro+",
+      "physicalModel": "#1 Pro+",
+      "assetPath": "/vehicles/smart/1-pro.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Smart #1 Pro+ front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Curvv EV",
+      "physicalModel": "Curvv EV",
+      "assetPath": "/vehicles/tata/curvv-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Curvv EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Harrier EV",
+      "physicalModel": "Harrier EV",
+      "assetPath": "/vehicles/tata/harrier-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Harrier EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Nexon EV",
+      "physicalModel": "Nexon EV",
+      "assetPath": "/vehicles/tata/nexon-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Nexon EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Punch EV",
+      "physicalModel": "Punch EV",
+      "assetPath": "/vehicles/tata/punch-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Punch EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Sierra EV",
+      "physicalModel": "Sierra EV",
+      "assetPath": "/vehicles/tata/sierra-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Sierra EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Tiago EV",
+      "physicalModel": "Tiago EV",
+      "assetPath": "/vehicles/tata/tiago-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Tiago EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Tata",
+      "model": "Tigor EV",
+      "physicalModel": "Tigor EV",
+      "assetPath": "/vehicles/tata/tigor-ev.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Tata Tigor EV front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Toyota",
+      "model": "Urban Cruiser Ebella",
+      "physicalModel": "Urban Cruiser Ebella",
+      "assetPath": "/vehicles/toyota/urban-cruiser-ebella.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "Toyota Urban Cruiser Ebella front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "VinFast",
+      "model": "VF 6",
+      "physicalModel": "VF 6",
+      "assetPath": "/vehicles/vinfast/vf-6.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "VinFast VF 6 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "VinFast",
+      "model": "VF 7",
+      "physicalModel": "VF 7",
+      "assetPath": "/vehicles/vinfast/vf-7.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "VinFast VF 7 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "VinFast",
+      "model": "VF MPV 7",
+      "physicalModel": "VF MPV 7",
+      "assetPath": "/vehicles/vinfast/vf-mpv-7.webp",
+      "sourceType": "wikimedia-commons-search",
+      "commonsFile": null,
+      "query": "VinFast VF MPV 7 front three-quarter automobile",
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Volvo",
+      "model": "C40 Recharge",
+      "physicalModel": "C40 Recharge",
+      "assetPath": "/vehicles/volvo/c40-recharge.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:The frontview of Volvo C40 RECHARGE.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    },
+    {
+      "make": "Volvo",
+      "model": "XC40 Recharge",
+      "physicalModel": "XC40 Recharge",
+      "assetPath": "/vehicles/volvo/xc40-recharge.webp",
+      "sourceType": "wikimedia-commons-file",
+      "commonsFile": "File:Volvo-XC40-front-right.jpg",
+      "query": null,
+      "selectionPolicy": {
+        "frontThreeQuarterPreferred": true,
+        "frontRightPreferred": true,
+        "peopleVisible": false,
+        "watermark": false,
+        "textOverlay": false,
+        "rearOnly": false,
+        "interior": false
+      },
+      "qcRequired": true
+    }
+  ]
+}

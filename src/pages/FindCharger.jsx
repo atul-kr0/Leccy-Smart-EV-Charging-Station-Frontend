@@ -684,6 +684,117 @@ const formatMinutes = (value) => {
     return `${number} min`;
 };
 
+
+
+// ============================================================
+// STYLED SELECT
+// ============================================================
+
+const StyledSelect = ({
+    value,
+    onChange,
+    options,
+    placeholder = "Select",
+    disabled = false,
+}) => {
+    const [open, setOpen] = useState(false);
+    const wrapperRef = useRef(null);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const handlePointerDown = (event) => {
+            if (!wrapperRef.current?.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handlePointerDown);
+        return () =>
+            document.removeEventListener("mousedown", handlePointerDown);
+    }, [open]);
+
+    const selectedOption = options.find(
+        (option) => String(option.value) === String(value)
+    );
+
+    const selectOption = (option) => {
+        onChange({
+            target: {
+                name: option.name,
+                value: option.value,
+            },
+        });
+        setOpen(false);
+    };
+
+    return (
+        <div
+            ref={wrapperRef}
+            className={`fc-select-wrap ${open ? "open" : ""} ${disabled ? "disabled" : ""}`}
+        >
+            <button
+                type="button"
+                className="fc-select-trigger"
+                disabled={disabled}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+                onClick={() => !disabled && setOpen((current) => !current)}
+            >
+                <span className={!selectedOption ? "placeholder" : ""}>
+                    {selectedOption?.label || placeholder}
+                </span>
+                <span className="fc-select-chevron">
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="m5 7 5 5 5-5" />
+                    </svg>
+                </span>
+            </button>
+
+            {open && (
+                <div className="fc-select-menu" role="listbox">
+                    {options.length === 0 ? (
+                        <div className="fc-select-empty">No options available</div>
+                    ) : (
+                        options.map((option) => (
+                            <button
+                                type="button"
+                                role="option"
+                                aria-selected={
+                                    String(option.value) === String(value)
+                                }
+                                key={String(option.value)}
+                                className={`fc-select-option ${
+                                    String(option.value) === String(value)
+                                        ? "selected"
+                                        : ""
+                                }`}
+                                onClick={() => selectOption(option)}
+                            >
+                                <span className="fc-select-option-content">
+                                    <span className="fc-select-option-label">
+                                        {option.label}
+                                    </span>
+
+                                    {option.connectorType && (
+                                        <span className="fc-select-option-meta">
+                                            {option.connectorType}
+                                        </span>
+                                    )}
+                                </span>
+
+                                {String(option.value) === String(value) && (
+                                    <span className="fc-select-check">✓</span>
+                                )}
+                            </button>
+                        ))
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 // ============================================================
 // MAIN COMPONENT
 // ============================================================
@@ -904,6 +1015,15 @@ const FindCharger = () => {
             search,
         ]);
 
+
+    const selectedBookingVehicle = useMemo(
+        () =>
+            vehicles.find(
+                (vehicle) =>
+                    String(vehicle?.id) === String(bookingVehicleId)
+            ) || null,
+        [vehicles, bookingVehicleId]
+    );
 
     // ========================================================
     // LOAD STATIONS
@@ -3359,7 +3479,180 @@ setBookingStation(
                     font-weight: 800;
                 }
 
-                .fc-select,
+                .fc-select-wrap {
+                    position: relative;
+                    width: 100%;
+                }
+
+                .fc-select-trigger {
+                    width: 100%;
+                    min-height: 50px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 0 14px 0 15px;
+                    border: 1px solid #dbe4ea;
+                    border-radius: 13px;
+                    outline: none;
+                    background: #fff;
+                    color: #06243d;
+                    font-size: 14px;
+                    text-align: left;
+                    cursor: pointer;
+                    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+                }
+
+                .fc-select-trigger:hover {
+                    border-color: #bfd8c8;
+                    background: #fcfffd;
+                }
+
+                .fc-select-wrap.open .fc-select-trigger {
+                    border-color: #00a83b;
+                    box-shadow: 0 0 0 3px rgba(0,168,59,.08);
+                    background: #fff;
+                }
+
+                .fc-select-trigger .placeholder {
+                    color: #8a9aaa;
+                }
+
+                .fc-select-trigger:disabled,
+                .fc-select-wrap.disabled .fc-select-trigger {
+                    opacity: .65;
+                    cursor: not-allowed;
+                    background: #f6f8fa;
+                }
+
+                .fc-select-chevron {
+                    width: 28px;
+                    height: 28px;
+                    flex-shrink: 0;
+                    display: grid;
+                    place-items: center;
+                    border-radius: 8px;
+                    background: #f3f7f5;
+                    color: #567086;
+                    transition: transform .2s ease, background .2s ease, color .2s ease;
+                }
+
+                .fc-select-chevron svg {
+                    width: 16px;
+                    height: 16px;
+                    fill: none;
+                    stroke: currentColor;
+                    stroke-width: 1.8;
+                    stroke-linecap: round;
+                    stroke-linejoin: round;
+                }
+
+                .fc-select-wrap.open .fc-select-chevron {
+                    transform: rotate(180deg);
+                    color: #00a83b;
+                    background: #eafff1;
+                }
+
+                .fc-select-menu {
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    top: calc(100% + 7px);
+                    z-index: 80;
+                    max-height: 245px;
+                    overflow-y: auto;
+                    padding: 6px;
+                    border: 1px solid #dbe6df;
+                    border-radius: 14px;
+                    background: rgba(255,255,255,.98);
+                    box-shadow: 0 18px 45px rgba(6,36,61,.16);
+                    backdrop-filter: blur(12px);
+                    animation: fcDropdownIn .18s ease both;
+                }
+
+                .fc-select-option {
+                    width: 100%;
+                    min-height: 43px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                    padding: 0 11px;
+                    border: none;
+                    border-radius: 10px;
+                    background: transparent;
+                    color: #29445a;
+                    font-size: 13px;
+                    text-align: left;
+                    cursor: pointer;
+                    transition: background .16s ease, color .16s ease;
+                }
+
+                .fc-select-option:hover {
+                    background: #f0fbf4;
+                    color: #008f34;
+                }
+
+                .fc-select-option.selected {
+                    background: #eafff1;
+                    color: #008f34;
+                    font-weight: 750;
+                }
+
+                .fc-select-option-content {
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 3px;
+                }
+
+                .fc-select-option-label {
+                    display: block;
+                    overflow: hidden;
+                    max-width: 100%;
+                    color: inherit;
+                    font-size: 13px;
+                    font-weight: 700;
+                    line-height: 1.25;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+
+                .fc-select-option-meta {
+                    display: block;
+                    color: #8a9aaa;
+                    font-size: 10px;
+                    font-weight: 750;
+                    line-height: 1.2;
+                    text-transform: uppercase;
+                    letter-spacing: .06em;
+                }
+
+                .fc-select-option:hover .fc-select-option-meta,
+                .fc-select-option.selected .fc-select-option-meta {
+                    color: currentColor;
+                    opacity: .72;
+                }
+
+                .fc-select-check {
+                    width: 22px;
+                    height: 22px;
+                    display: grid;
+                    place-items: center;
+                    border-radius: 7px;
+                    background: #00a83b;
+                    color: white;
+                    font-size: 12px;
+                    font-weight: 900;
+                }
+
+                .fc-select-empty {
+                    padding: 13px 11px;
+                    color: #8a9aaa;
+                    font-size: 12px;
+                }
+
                 .fc-number {
                     width: 100%;
                     height: 50px;
@@ -3373,16 +3666,69 @@ setBookingStation(
                     font-size: 14px;
                 }
 
-                .fc-select:focus,
                 .fc-number:focus {
                     border-color: #00a83b;
                     box-shadow: 0 0 0 3px rgba(0,168,59,.08);
+                }
+
+                .fc-vehicle-meta {
+                    margin-top: 8px;
+                    min-height: 43px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 11px;
+                    border: 1px solid #e0ece5;
+                    border-radius: 11px;
+                    background: #f7fcf9;
+                }
+
+                .fc-vehicle-meta-icon {
+                    width: 28px;
+                    height: 28px;
+                    display: grid;
+                    place-items: center;
+                    border-radius: 8px;
+                    background: #e6f9ed;
+                    color: #00a83b;
+                    font-size: 17px;
+                    font-weight: 800;
+                    transform: rotate(-90deg);
+                }
+
+                .fc-vehicle-meta div {
+                    min-width: 0;
+                }
+
+                .fc-vehicle-meta span,
+                .fc-vehicle-meta strong {
+                    display: block;
+                }
+
+                .fc-vehicle-meta span {
+                    color: #8a9aaa;
+                    font-size: 9px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: .08em;
+                }
+
+                .fc-vehicle-meta strong {
+                    margin-top: 2px;
+                    color: #06243d;
+                    font-size: 12px;
                 }
 
                 .fc-battery-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 13px;
+                    margin-top: 19px;
+                    align-items: start;
+                }
+
+                .fc-battery-grid .fc-field {
+                    margin-top: 0;
                 }
 
                 .fc-station-summary {
@@ -3534,7 +3880,11 @@ setBookingStation(
                 }
 
                 .fc-priority {
-                    padding: 12px;
+                    min-height: 48px;
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    padding: 8px 10px;
                     border: 1px solid #dce5eb;
                     border-radius: 11px;
                     background: white;
@@ -3543,12 +3893,42 @@ setBookingStation(
                     font-size: 12px;
                     font-weight: 700;
                     cursor: pointer;
+                    transition: border-color .18s ease, background .18s ease, transform .18s ease;
+                }
+
+                .fc-priority:hover {
+                    border-color: #b9d8c5;
+                    background: #fbfefc;
+                    transform: translateY(-1px);
                 }
 
                 .fc-priority.selected {
                     border-color: #00a83b;
                     background: #effcf4;
                     color: #008a34;
+                }
+
+                .fc-priority-number {
+                    width: 25px;
+                    height: 25px;
+                    flex: 0 0 25px;
+                    display: grid;
+                    place-items: center;
+                    border-radius: 8px;
+                    background: #f2f5f7;
+                    color: #8a9aaa;
+                    font-size: 9px;
+                    font-weight: 850;
+                    letter-spacing: .04em;
+                }
+
+                .fc-priority.selected .fc-priority-number {
+                    background: #00a83b;
+                    color: white;
+                }
+
+                .fc-priority-label {
+                    flex: 1;
                 }
 
 
@@ -4600,69 +4980,38 @@ setBookingStation(
                                 </label>
 
 
-                                <select
-                                    className="fc-select"
-                                    value={
-                                        bookingVehicleId
-                                    }
+                                <StyledSelect
+                                    value={bookingVehicleId}
                                     onChange={event =>
-                                        setBookingVehicleId(
-                                            event.target.value
-                                        )
+                                        setBookingVehicleId(event.target.value)
                                     }
-                                    disabled={
+                                    disabled={vehiclesLoading}
+                                    placeholder={
                                         vehiclesLoading
+                                            ? "Loading vehicles..."
+                                            : vehicles.length === 0
+                                                ? "No vehicles found"
+                                                : "Select a vehicle"
                                     }
-                                >
+                                    options={vehicles.map(vehicle => ({
+                                        value: vehicle.id,
+                                        label: vehicleLabel(vehicle),
+                                    }))}
+                                />
 
-                                    {vehiclesLoading ? (
-
-                                        <option value="">
-                                            Loading vehicles...
-                                        </option>
-
-                                    ) : vehicles.length ===
-                                      0 ? (
-
-                                        <option value="">
-                                            No vehicles found
-                                        </option>
-
-                                    ) : (
-
-                                        <>
-
-                                            <option value="">
-                                                Select a vehicle
-                                            </option>
-
-
-                                            {vehicles.map(
-                                                vehicle => (
-
-                                                    <option
-                                                        key={
-                                                            vehicle.id
-                                                        }
-                                                        value={
-                                                            vehicle.id
-                                                        }
-                                                    >
-                                                        {
-                                                            vehicleLabel(
-                                                                vehicle
-                                                            )
-                                                        }
-                                                    </option>
-
-                                                )
-                                            )}
-
-                                        </>
-
-                                    )}
-
-                                </select>
+                                {selectedBookingVehicle && (
+                                    <div className="fc-vehicle-meta">
+                                        <span className="fc-vehicle-meta-icon">⌁</span>
+                                        <div>
+                                            <span>Connector type</span>
+                                            <strong>
+                                                {formatConnectorName(
+                                                    selectedBookingVehicle.connectorType
+                                                )}
+                                            </strong>
+                                        </div>
+                                    </div>
+                                )}
 
                             </div>
 
@@ -5033,60 +5382,24 @@ setBookingStation(
                                 </label>
 
 
-                                <select
-                                    className="fc-select"
-                                    value={
-                                        selectedVehicleId
-                                    }
+                                <StyledSelect
+                                    value={selectedVehicleId}
                                     onChange={event =>
-                                        setSelectedVehicleId(
-                                            event.target.value
-                                        )
+                                        setSelectedVehicleId(event.target.value)
                                     }
-                                >
-
-                                    {vehicles.length ===
-                                    0 ? (
-
-                                        <option value="">
-                                            No vehicles found
-                                        </option>
-
-                                    ) : (
-
-                                        <>
-
-                                            <option value="">
-                                                Select a vehicle
-                                            </option>
-
-
-                                            {vehicles.map(
-                                                vehicle => (
-
-                                                    <option
-                                                        key={
-                                                            vehicle.id
-                                                        }
-                                                        value={
-                                                            vehicle.id
-                                                        }
-                                                    >
-                                                        {
-                                                            vehicleLabel(
-                                                                vehicle
-                                                            )
-                                                        }
-                                                    </option>
-
-                                                )
-                                            )}
-
-                                        </>
-
-                                    )}
-
-                                </select>
+                                    placeholder={
+                                        vehicles.length === 0
+                                            ? "No vehicles found"
+                                            : "Select a vehicle"
+                                    }
+                                    options={vehicles.map(vehicle => ({
+                                        value: vehicle.id,
+                                        label: vehicleLabel(vehicle),
+                                        connectorType: formatConnectorName(
+                                            vehicle.connectorType
+                                        ),
+                                    }))}
+                                />
 
                             </div>
 
@@ -5176,9 +5489,18 @@ setBookingStation(
                                                         )
                                                     }
                                                 >
-                                                    {
-                                                        priority.label
-                                                    }
+                                                    <span className="fc-priority-number">
+                                                        {selectedPriorities.includes(priority.value)
+                                                            ? String(
+                                                                selectedPriorities.indexOf(
+                                                                    priority.value
+                                                                ) + 1
+                                                            ).padStart(2, "0")
+                                                            : ""}
+                                                    </span>
+                                                    <span className="fc-priority-label">
+                                                        {priority.label}
+                                                    </span>
                                                 </button>
 
                                             )

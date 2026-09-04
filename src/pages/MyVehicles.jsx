@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import vehicleImage from "../assets/images/VehicleCard.png";
+import vehicleFallback from "../assets/images/VehicleCard.png";
+import { getBrandLogo, getVehicleImage } from "../utils/vehicleAssets";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/api/vehicles`;
-const BOOKINGS_API_URL = `${import.meta.env.VITE_API_URL}/api/bookings`;
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_URL = `${API_BASE_URL}/api/vehicles`;
+const CATALOGUE_API_URL = `${API_BASE_URL}/api/vehicle-catalogue`;
+const BOOKINGS_API_URL = `${API_BASE_URL}/api/bookings`;
 
 const emptyForm = {
     manufacturer: "",
     model: "",
+    variant: "",
     registrationNumber: "",
-    batteryCapacity: "",
-    connectorType: "CCS2",
-    chargingType: "DC",
-    maxChargingPower: "",
+    catalogueVehicleId: "",
 };
 
 const Icon = ({ name, size = 20 }) => {
@@ -75,6 +76,110 @@ const Icon = ({ name, size = 20 }) => {
     );
 };
 
+
+const CatalogueSelect = ({
+    name,
+    value,
+    onChange,
+    options,
+    placeholder,
+    disabled = false,
+    loading = false,
+    getOptionValue = (option) => option,
+    getOptionLabel = (option) => option,
+}) => {
+    const [open, setOpen] = useState(false);
+    const ref = React.useRef(null);
+
+    useEffect(() => {
+        if (!open) return;
+
+        const handleOutside = (event) => {
+            if (ref.current && !ref.current.contains(event.target)) {
+                setOpen(false);
+            }
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") setOpen(false);
+        };
+
+        document.addEventListener("mousedown", handleOutside);
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("mousedown", handleOutside);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [open]);
+
+    const selectedOption = options.find(
+        (option) => String(getOptionValue(option)) === String(value)
+    );
+    const selectedLabel = selectedOption ? getOptionLabel(selectedOption) : "";
+    const isDisabled = disabled || loading;
+
+    const choose = (option) => {
+        onChange({
+            target: {
+                name,
+                value: String(getOptionValue(option)),
+            },
+        });
+        setOpen(false);
+    };
+
+    return (
+        <div className={`catalogue-select ${open ? "is-open" : ""}`} ref={ref}>
+            <button
+                type="button"
+                className={`catalogue-select-trigger ${!selectedLabel ? "placeholder" : ""}`}
+                onClick={() => !isDisabled && setOpen((prev) => !prev)}
+                disabled={isDisabled}
+                aria-haspopup="listbox"
+                aria-expanded={open}
+            >
+                <span>{loading ? "Loading..." : selectedLabel || placeholder}</span>
+                <span className="catalogue-select-chevron" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m6 9 6 6 6-6" />
+                    </svg>
+                </span>
+            </button>
+
+            {open && !isDisabled && (
+                <div className="catalogue-select-menu" role="listbox">
+                    {options.length === 0 ? (
+                        <div className="catalogue-select-empty">No options available</div>
+                    ) : (
+                        options.map((option) => {
+                            const optionValue = String(getOptionValue(option));
+                            const optionLabel = getOptionLabel(option);
+                            const selected = String(value) === optionValue;
+
+                            return (
+                                <button
+                                    type="button"
+                                    role="option"
+                                    aria-selected={selected}
+                                    className={`catalogue-select-option ${selected ? "selected" : ""}`}
+                                    key={optionValue}
+                                    onClick={() => choose(option)}
+                                >
+                                    <span>{optionLabel}</span>
+                                    {selected && (
+                                        <span className="catalogue-select-check" aria-hidden="true">✓</span>
+                                    )}
+                                </button>
+                            );
+                        })
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const getToken = () => localStorage.getItem("token");
 
 const getArray = (data) => {
@@ -83,6 +188,20 @@ const getArray = (data) => {
     if (Array.isArray(data?.vehicles)) return data.vehicles;
     if (Array.isArray(data?.bookings)) return data.bookings;
     return [];
+};
+
+const normalizeVehicle = (vehicle) => {
+    const dcPower = Number(vehicle?.maxDcChargingKw ?? vehicle?.maxChargingPower ?? 0);
+    const acPower = Number(vehicle?.maxAcChargingKw ?? 0);
+
+    return {
+        ...vehicle,
+        catalogueVehicleId: vehicle?.catalogueVehicleId ?? vehicle?.catalogueVehicle?.id ?? null,
+        batteryCapacity: vehicle?.batteryCapacity ?? vehicle?.batteryCapacityKwh ?? 0,
+        chargingType: vehicle?.chargingType ?? (dcPower > 0 ? "DC" : "AC"),
+        maxChargingPower: vehicle?.maxChargingPower ?? (dcPower || acPower),
+        imagePath: vehicle?.imagePath ?? vehicle?.catalogueVehicle?.imagePath ?? null,
+    };
 };
 
 const apiRequest = async (url, options = {}) => {
@@ -97,17 +216,54 @@ const apiRequest = async (url, options = {}) => {
         },
     });
 
-    if (!response.ok) {
-        let message = `Request failed (${response.status})`;
+    // Read the response as text first. Some successful endpoints (especially
+    // DELETE) can return 200/204 with an empty response body. Calling
+    // response.json() on an empty body throws:
+    // "Unexpected end of JSON input".
+    const rawBody = await response.text();
+    let body = null;
+
+    if (rawBody.trim()) {
         try {
-            const body = await response.json();
-            message = body?.message || body?.error || message;
-        } catch {}
-        throw new Error(message);
+            body = JSON.parse(rawBody);
+        } catch {
+            body = rawBody;
+        }
     }
 
-    if (response.status === 204) return null;
-    return response.json();
+    if (!response.ok) {
+        let message = `Request failed (${response.status})`;
+
+        if (body && typeof body === "object" && !Array.isArray(body)) {
+            message = body?.message || body?.error || message;
+        } else if (typeof body === "string" && body.trim()) {
+            message = body;
+        }
+
+        const error = new Error(message);
+
+        // Bean Validation errors are returned as:
+        // { registrationNumber: "Enter a valid registration number ..." }
+        if (body && typeof body === "object" && !Array.isArray(body)) {
+            const validationErrors = Object.fromEntries(
+                Object.entries(body).filter(
+                    ([, value]) => typeof value === "string"
+                )
+            );
+
+            if (Object.keys(validationErrors).length > 0) {
+                error.fieldErrors = validationErrors;
+            }
+        }
+
+        throw error;
+    }
+
+    // Empty successful response is valid (including DELETE 204 or a 200
+    // response with no body). Never try to JSON.parse an empty string.
+    if (!rawBody.trim() || response.status === 204) return null;
+
+    return body;
 };
 
 const getStatus = (vehicle, bookings) => {
@@ -141,9 +297,14 @@ const getStatus = (vehicle, bookings) => {
 const MyVehicles = () => {
     const [vehicles, setVehicles] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [manufacturers, setManufacturers] = useState([]);
+    const [models, setModels] = useState([]);
+    const [variants, setVariants] = useState([]);
+    const [catalogueLoading, setCatalogueLoading] = useState(false);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
 
     const [showForm, setShowForm] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState(null);
@@ -156,14 +317,73 @@ const MyVehicles = () => {
     const fetchVehicles = async (silent = false) => {
         try {
             if (!silent) setLoading(true);
-            setError("");
+            if (!silent) setError("");
+
             const data = await apiRequest(`${API_URL}/getAllVehicles`);
-            setVehicles(getArray(data));
+            setVehicles(getArray(data).map(normalizeVehicle));
         } catch (err) {
-            console.error(err);
-            setError(err.message || "Unable to load your vehicles.");
+            console.error("Vehicle sync error:", err);
+
+            // Background sync must never flash an error banner over the UI.
+            // Keep the currently displayed vehicles and let the next sync retry.
+            if (!silent) {
+                setError(err.message || "Unable to load your vehicles.");
+            }
         } finally {
             if (!silent) setLoading(false);
+        }
+    };
+
+    const fetchManufacturers = async () => {
+        try {
+            const data = await apiRequest(`${CATALOGUE_API_URL}/manufacturers`);
+            setManufacturers(getArray(data));
+        } catch (err) {
+            console.error("Catalogue manufacturer error:", err);
+        }
+    };
+
+    const fetchModels = async (manufacturer) => {
+        if (!manufacturer) {
+            setModels([]);
+            setVariants([]);
+            return;
+        }
+
+        try {
+            setCatalogueLoading(true);
+            const data = await apiRequest(
+                `${CATALOGUE_API_URL}/models?manufacturer=${encodeURIComponent(manufacturer)}`
+            );
+            const uniqueModels = [...new Map(
+                getArray(data).map((item) => [item.model, item])
+            ).values()];
+            setModels(uniqueModels);
+        } catch (err) {
+            console.error("Catalogue model error:", err);
+            setError(err.message || "Unable to load vehicle models.");
+        } finally {
+            setCatalogueLoading(false);
+        }
+    };
+
+    const fetchVariants = async (manufacturer, model) => {
+        if (!manufacturer || !model) {
+            setVariants([]);
+            return;
+        }
+
+        try {
+            setCatalogueLoading(true);
+            const data = await apiRequest(
+                `${CATALOGUE_API_URL}/variants?manufacturer=${encodeURIComponent(manufacturer)}&model=${encodeURIComponent(model)}`
+            );
+            setVariants(getArray(data));
+        } catch (err) {
+            console.error("Catalogue variant error:", err);
+            setError(err.message || "Unable to load vehicle variants.");
+        } finally {
+            setCatalogueLoading(false);
         }
     };
 
@@ -183,17 +403,42 @@ const MyVehicles = () => {
         let mounted = true;
 
         const load = async () => {
-            await Promise.all([fetchVehicles(), fetchBookings()]);
+            await Promise.all([fetchVehicles(), fetchBookings(), fetchManufacturers()]);
             if (!mounted) return;
         };
 
         load();
 
-        const interval = window.setInterval(fetchBookings, 5000);
+        // Keep the UI in sync with backend changes without reloading the browser.
+        // React state updates the vehicle cards and overview stats in-place.
+        const vehicleSyncInterval = window.setInterval(
+            () => fetchVehicles(true),
+            5000
+        );
+
+        const bookingSyncInterval = window.setInterval(
+            () => fetchBookings(),
+            5000
+        );
+
+        // Refresh immediately when the user comes back to this tab.
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                fetchVehicles(true);
+                fetchBookings();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
 
         return () => {
             mounted = false;
-            window.clearInterval(interval);
+            window.clearInterval(vehicleSyncInterval);
+            window.clearInterval(bookingSyncInterval);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
         };
     }, []);
 
@@ -206,16 +451,10 @@ const MyVehicles = () => {
             (vehicle) => String(vehicle.chargingType).toUpperCase() === "DC"
         ).length;
 
-        const totalBattery = vehicles.reduce(
-            (sum, vehicle) => sum + Number(vehicle.batteryCapacity || 0),
-            0
-        );
-
         return {
             total: vehicles.length,
             charging,
             dc,
-            battery: totalBattery,
         };
     }, [vehicles, bookings]);
 
@@ -229,6 +468,7 @@ const MyVehicles = () => {
         setEditingVehicle(null);
         setFormData(emptyForm);
         setError("");
+        setFieldErrors({});
         setShowForm(true);
     };
 
@@ -237,13 +477,14 @@ const MyVehicles = () => {
         setFormData({
             manufacturer: vehicle.manufacturer || "",
             model: vehicle.model || "",
+            variant: vehicle.variant || "",
             registrationNumber: vehicle.registrationNumber || "",
-            batteryCapacity: vehicle.batteryCapacity || "",
-            connectorType: vehicle.connectorType || "CCS2",
-            chargingType: vehicle.chargingType || "DC",
-            maxChargingPower: vehicle.maxChargingPower || "",
+            catalogueVehicleId: vehicle.catalogueVehicleId || "",
         });
+        fetchModels(vehicle.manufacturer || "");
+        fetchVariants(vehicle.manufacturer || "", vehicle.model || "");
         setError("");
+        setFieldErrors({});
         setShowForm(true);
     };
 
@@ -252,11 +493,46 @@ const MyVehicles = () => {
         setShowForm(false);
         setEditingVehicle(null);
         setFormData(emptyForm);
+        setFieldErrors({});
     };
 
-    const handleChange = (event) => {
+    const handleChange = async (event) => {
         const { name, value } = event.target;
+
+        if (name === "manufacturer") {
+            setFormData((prev) => ({ ...prev, manufacturer: value, model: "", variant: "", catalogueVehicleId: "" }));
+            setModels([]);
+            setVariants([]);
+            await fetchModels(value);
+            return;
+        }
+
+        if (name === "model") {
+            setFormData((prev) => ({ ...prev, model: value, variant: "", catalogueVehicleId: "" }));
+            setVariants([]);
+            await fetchVariants(formData.manufacturer, value);
+            return;
+        }
+
+        if (name === "variant") {
+            const selected = variants.find((item) => String(item.id) === String(value));
+            setFormData((prev) => ({
+                ...prev,
+                variant: selected?.variant || "",
+                catalogueVehicleId: selected?.id || "",
+            }));
+            return;
+        }
+
         setFormData((prev) => ({ ...prev, [name]: value }));
+
+        // Remove the error for this field as soon as the user edits it.
+        setFieldErrors((prev) => {
+            if (!prev[name]) return prev;
+            const next = { ...prev };
+            delete next[name];
+            return next;
+        });
     };
 
     const handleSubmit = async (event) => {
@@ -265,15 +541,19 @@ const MyVehicles = () => {
         try {
             setSaving(true);
             setError("");
+            setFieldErrors({});
+
+            if (!formData.catalogueVehicleId) {
+                setFieldErrors({
+                    catalogueVehicleId:
+                        "Please select a valid vehicle variant from the catalogue.",
+                });
+                return;
+            }
 
             const payload = {
-                manufacturer: formData.manufacturer.trim(),
-                model: formData.model.trim(),
                 registrationNumber: formData.registrationNumber.trim().toUpperCase(),
-                batteryCapacity: Number(formData.batteryCapacity),
-                connectorType: formData.connectorType,
-                chargingType: formData.chargingType,
-                maxChargingPower: Number(formData.maxChargingPower),
+                catalogueVehicleId: Number(formData.catalogueVehicleId),
             };
 
             const editing = Boolean(editingVehicle);
@@ -292,7 +572,13 @@ const MyVehicles = () => {
             closeForm();
         } catch (err) {
             console.error(err);
-            setError(err.message || "Unable to save vehicle.");
+
+            if (err.fieldErrors) {
+                setFieldErrors(err.fieldErrors);
+                setError("");
+            } else {
+                setError(err.message || "Unable to save vehicle.");
+            }
         } finally {
             setSaving(false);
         }
@@ -375,15 +661,6 @@ const MyVehicles = () => {
                         </div>
 
                         <div className="header-actions">
-                            <button
-                                className="refresh-button"
-                                onClick={handleRefresh}
-                                disabled={refreshing}
-                            >
-                                <span className={refreshing ? "spin" : ""}>↻</span>
-                                {refreshing ? "Refreshing" : "Refresh"}
-                            </button>
-
                             <button className="add-button" onClick={openAdd}>
                                 <Icon name="plus" size={19} />
                                 Add vehicle
@@ -432,10 +709,6 @@ const MyVehicles = () => {
                             <div>
                                 <span>DC READY</span>
                                 <strong>{stats.dc}</strong>
-                            </div>
-                            <div>
-                                <span>BATTERY</span>
-                                <strong>{stats.battery.toFixed(1)}<small> kWh</small></strong>
                             </div>
                         </div>
                     </section>
@@ -491,10 +764,15 @@ const MyVehicles = () => {
                                             onClick={() => setActiveVehicle(vehicle)}
                                         >
                                             <div className="card-image">
-                                                <div className="image-glow" />
                                                 <img
-                                                    src={vehicleImage}
+                                                    className="vehicle-card-image"
+                                                    src={vehicle.imagePath || getVehicleImage(vehicle.manufacturer, vehicle.model)}
                                                     alt={`${vehicle.manufacturer} ${vehicle.model}`}
+                                                    onError={(e) => {
+                                                        if (e.currentTarget.dataset.fallbackApplied) return;
+                                                        e.currentTarget.dataset.fallbackApplied = "true";
+                                                        e.currentTarget.src = vehicleFallback;
+                                                    }}
                                                 />
 
                                                 <div className={`live-badge ${status.key.toLowerCase()}`}>
@@ -530,9 +808,15 @@ const MyVehicles = () => {
                                             <div className="card-content">
                                                 <div className="vehicle-title-row">
                                                     <div>
-                                                        <span className="vehicle-label">
-                                                            {vehicle.manufacturer}
-                                                        </span>
+                                                        <div className="vehicle-label brand-label">
+                                                            <img
+                                                                src={getBrandLogo(vehicle.manufacturer)}
+                                                                alt=""
+                                                                aria-hidden="true"
+                                                                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                                            />
+                                                            <span>{vehicle.manufacturer}</span>
+                                                        </div>
                                                         <h3>{vehicle.model}</h3>
                                                     </div>
                                                     <span className="vehicle-index">
@@ -652,10 +936,15 @@ const MyVehicles = () => {
 
                         <div className="detail-hero">
                             <div className="detail-image">
-                                <div className="detail-glow" />
                                 <img
-                                    src={vehicleImage}
+                                    className="detail-vehicle-image"
+                                    src={activeVehicle.imagePath || getVehicleImage(activeVehicle.manufacturer, activeVehicle.model)}
                                     alt={`${activeVehicle.manufacturer} ${activeVehicle.model}`}
+                                    onError={(e) => {
+                                                        if (e.currentTarget.dataset.fallbackApplied) return;
+                                                        e.currentTarget.dataset.fallbackApplied = "true";
+                                                        e.currentTarget.src = vehicleFallback;
+                                                    }}
                                 />
                             </div>
 
@@ -736,8 +1025,8 @@ const MyVehicles = () => {
                                         : "Add a vehicle"}
                                 </h2>
                                 <p>
-                                    Add accurate charging details for better
-                                    recommendations.
+                                    Select your vehicle from Leccy's verified catalogue.
+                                    Charging specifications are filled automatically.
                                 </p>
                             </div>
 
@@ -750,23 +1039,41 @@ const MyVehicles = () => {
                             <div className="form-grid">
                                 <label>
                                     Manufacturer
-                                    <input
+                                    <CatalogueSelect
                                         name="manufacturer"
                                         value={formData.manufacturer}
                                         onChange={handleChange}
-                                        placeholder="e.g. Tata"
-                                        required
+                                        options={manufacturers}
+                                        placeholder="Select manufacturer"
+                                        disabled={catalogueLoading}
                                     />
                                 </label>
 
                                 <label>
                                     Model
-                                    <input
+                                    <CatalogueSelect
                                         name="model"
                                         value={formData.model}
                                         onChange={handleChange}
-                                        placeholder="e.g. Nexon EV"
-                                        required
+                                        options={models}
+                                        placeholder="Select model"
+                                        disabled={!formData.manufacturer || catalogueLoading}
+                                        getOptionValue={(item) => item.model}
+                                        getOptionLabel={(item) => item.model}
+                                    />
+                                </label>
+
+                                <label className="full">
+                                    Variant
+                                    <CatalogueSelect
+                                        name="variant"
+                                        value={formData.catalogueVehicleId}
+                                        onChange={handleChange}
+                                        options={variants}
+                                        placeholder={catalogueLoading ? "Loading variants..." : "Select variant"}
+                                        disabled={!formData.model || catalogueLoading}
+                                        getOptionValue={(item) => item.id}
+                                        getOptionLabel={(item) => item.variant || item.model}
                                     />
                                 </label>
 
@@ -778,67 +1085,29 @@ const MyVehicles = () => {
                                         onChange={handleChange}
                                         placeholder="e.g. DL01AB1234"
                                         required
+                                        aria-invalid={Boolean(fieldErrors.registrationNumber)}
+                                        className={
+                                            fieldErrors.registrationNumber
+                                                ? "field-error"
+                                                : ""
+                                        }
                                     />
+                                    {fieldErrors.registrationNumber && (
+                                        <span className="field-error-message">
+                                            {fieldErrors.registrationNumber}
+                                        </span>
+                                    )}
                                 </label>
 
-                                <label>
-                                    Battery capacity
-                                    <div className="unit-input">
-                                        <input
-                                            name="batteryCapacity"
-                                            type="number"
-                                            step="0.1"
-                                            min="0"
-                                            value={formData.batteryCapacity}
-                                            onChange={handleChange}
-                                            placeholder="40.5"
-                                            required
-                                        />
-                                        <span>kWh</span>
+                                {formData.catalogueVehicleId && (
+                                    <div className="catalogue-preview full">
+                                        <span>CATALOGUE VEHICLE</span>
+                                        <strong>
+                                            {formData.manufacturer} {formData.model}
+                                            {formData.variant ? ` · ${formData.variant}` : ""}
+                                        </strong>
                                     </div>
-                                </label>
-
-                                <label>
-                                    Max charging power
-                                    <div className="unit-input">
-                                        <input
-                                            name="maxChargingPower"
-                                            type="number"
-                                            step="0.1"
-                                            min="0"
-                                            value={formData.maxChargingPower}
-                                            onChange={handleChange}
-                                            placeholder="50"
-                                            required
-                                        />
-                                        <span>kW</span>
-                                    </div>
-                                </label>
-
-                                <label>
-                                    Connector type
-                                    <select
-                                        name="connectorType"
-                                        value={formData.connectorType}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="CCS2">CCS2</option>
-                                        <option value="TYPE2">Type 2</option>
-                                        <option value="CHADEMO">CHAdeMO</option>
-                                    </select>
-                                </label>
-
-                                <label>
-                                    Charging type
-                                    <select
-                                        name="chargingType"
-                                        value={formData.chargingType}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="DC">DC</option>
-                                        <option value="AC">AC</option>
-                                    </select>
-                                </label>
+                                )}
                             </div>
 
                             <div className="form-tip">
@@ -846,10 +1115,10 @@ const MyVehicles = () => {
                                     <Icon name="bolt" size={18} />
                                 </div>
                                 <p>
-                                    <strong>Why these details matter</strong>
+                                    <strong>Why the catalogue matters</strong>
                                     <br />
-                                    Connector and charging power help Leccy identify
-                                    compatible chargers and estimate charging time.
+                                    Leccy uses the selected vehicle variant to load its
+                                    verified battery, connector, and charging specifications.
                                 </p>
                             </div>
 
@@ -1119,7 +1388,7 @@ const styles = `
 
     .overview-stats {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 8px;
         position: relative;
         z-index: 1;
@@ -1218,31 +1487,20 @@ const styles = `
         overflow: hidden;
         display: grid;
         place-items: center;
-        background:
-            radial-gradient(circle at 50% 70%, rgba(0,168,59,.09), transparent 43%),
-            #f5f8fa;
+        background: #f5f8fa;
     }
 
-    .image-glow {
-        position: absolute;
-        width: 180px;
-        height: 180px;
-        border-radius: 50%;
-        background: rgba(0,168,59,.08);
-        filter: blur(10px);
-        animation: breathe 4s ease-in-out infinite;
-    }
 
-    .card-image img {
-        width: 86%;
-        height: 165px;
+    .vehicle-card-image {
+        width: 96%;
+        height: 190px;
         object-fit: contain;
         position: relative;
         z-index: 1;
         transition: transform .45s cubic-bezier(.2,.8,.2,1);
     }
 
-    .vehicle-card:hover .card-image img {
+    .vehicle-card:hover .vehicle-card-image {
         transform: scale(1.055) translateY(-4px);
     }
 
@@ -1351,6 +1609,20 @@ const styles = `
         font-weight: 800;
         letter-spacing: .1em;
         text-transform: uppercase;
+    }
+
+    .brand-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .brand-label img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        filter: grayscale(1);
+        opacity: .8;
     }
 
     .vehicle-title-row h3 {
@@ -1598,6 +1870,25 @@ const styles = `
         padding: 0 22px;
     }
 
+    .field-error {
+        border-color: #d53d3d !important;
+        box-shadow: 0 0 0 3px rgba(213,61,61,.08);
+    }
+
+    .field-error:focus {
+        border-color: #d53d3d !important;
+        box-shadow: 0 0 0 3px rgba(213,61,61,.12);
+    }
+
+    .field-error-message {
+        display: block;
+        margin-top: 7px;
+        color: #c63b3b;
+        font-size: 12px;
+        font-weight: 650;
+        line-height: 1.4;
+    }
+
     .error-banner {
         display: flex;
         align-items: center;
@@ -1677,9 +1968,7 @@ const styles = `
         grid-template-columns: 1fr 1fr;
         align-items: center;
         min-height: 300px;
-        background:
-            radial-gradient(circle at 20% 50%, rgba(0,168,59,.1), transparent 35%),
-            #f7faf8;
+        background: #f7faf8;
     }
 
     .detail-image {
@@ -1689,23 +1978,14 @@ const styles = `
         place-items: center;
     }
 
-    .detail-image img {
-        width: 90%;
-        height: 210px;
+
+    .detail-vehicle-image {
+        width: 98%;
+        height: 235px;
         object-fit: contain;
         position: relative;
         z-index: 1;
         animation: detailCarIn .7s cubic-bezier(.2,.8,.2,1);
-    }
-
-    .detail-glow {
-        position: absolute;
-        width: 170px;
-        height: 170px;
-        border-radius: 50%;
-        background: rgba(0,168,59,.1);
-        filter: blur(12px);
-        animation: breathe 4s infinite;
     }
 
     .detail-hero > div:last-child {
@@ -1833,6 +2113,153 @@ const styles = `
 
     .form-grid label.full {
         grid-column: 1 / -1;
+    }
+
+    .catalogue-select {
+        position: relative;
+        margin-top: 7px;
+    }
+
+    .catalogue-select-trigger {
+        width: 100%;
+        height: 52px;
+        border: 1px solid #dce5ec;
+        border-radius: 14px;
+        outline: none;
+        padding: 0 15px;
+        background: rgba(255,255,255,.96);
+        color: #06243d;
+        font-size: 14px;
+        font-weight: 650;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-align: left;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(6,36,61,.025);
+        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
+    }
+
+    .catalogue-select-trigger:hover:not(:disabled) {
+        border-color: #b9d6c4;
+        background: #fbfffc;
+    }
+
+    .catalogue-select-trigger:focus-visible,
+    .catalogue-select.is-open .catalogue-select-trigger {
+        border-color: #00a83b;
+        box-shadow: 0 0 0 4px rgba(0,168,59,.08), 0 8px 22px rgba(6,36,61,.055);
+    }
+
+    .catalogue-select-trigger.placeholder {
+        color: #93a2b0;
+        font-weight: 550;
+    }
+
+    .catalogue-select-trigger:disabled {
+        opacity: .58;
+        cursor: not-allowed;
+        background: #f5f7f9;
+    }
+
+    .catalogue-select-chevron {
+        width: 30px;
+        height: 30px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        display: grid;
+        place-items: center;
+        color: #7890a4;
+        background: #f2f6f8;
+        transition: transform .22s ease, color .2s ease, background .2s ease;
+    }
+
+    .catalogue-select-chevron svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    .catalogue-select.is-open .catalogue-select-chevron {
+        transform: rotate(180deg);
+        color: #00a83b;
+        background: #eafff1;
+    }
+
+    .catalogue-select-menu {
+        position: absolute;
+        z-index: 30;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        max-height: 255px;
+        overflow-y: auto;
+        padding: 7px;
+        border: 1px solid #dce8e1;
+        border-radius: 16px;
+        background: rgba(255,255,255,.98);
+        box-shadow: 0 18px 45px rgba(6,36,61,.15), 0 3px 10px rgba(6,36,61,.05);
+        backdrop-filter: blur(14px);
+        animation: dropdownIn .18s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .catalogue-select-menu::-webkit-scrollbar {
+        width: 7px;
+    }
+
+    .catalogue-select-menu::-webkit-scrollbar-thumb {
+        border-radius: 999px;
+        background: #d7e2e8;
+    }
+
+    .catalogue-select-option {
+        width: 100%;
+        min-height: 43px;
+        padding: 0 11px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: #526b82;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 650;
+        cursor: pointer;
+        transition: background .16s ease, color .16s ease, transform .16s ease;
+    }
+
+    .catalogue-select-option:hover {
+        background: #f0fff5;
+        color: #007f30;
+        transform: translateX(2px);
+    }
+
+    .catalogue-select-option.selected {
+        background: #eafff1;
+        color: #008f34;
+    }
+
+    .catalogue-select-check {
+        width: 23px;
+        height: 23px;
+        flex-shrink: 0;
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        background: #00a83b;
+        color: white;
+        font-size: 12px;
+        font-weight: 900;
+    }
+
+    .catalogue-select-empty {
+        padding: 18px 12px;
+        text-align: center;
+        color: #8a9caf;
+        font-size: 12px;
     }
 
     .form-grid input,
@@ -2007,6 +2434,11 @@ const styles = `
         to { transform: translate3d(20px,-15px,0); }
     }
 
+    @keyframes dropdownIn {
+        from { opacity: 0; transform: translateY(-5px) scale(.985); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     @keyframes skeleton {
         to { background-position: -200% 0; }
     }
@@ -2062,3 +2494,5 @@ const styles = `
 `;
 
 export default MyVehicles;
+
+// FINAL DELETE RESPONSE FIX: empty/non-JSON DELETE responses are handled safely in apiRequest().

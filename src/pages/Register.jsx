@@ -14,6 +14,7 @@ const Register = () => {
 
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
     const [loading, setLoading] = useState(false);
 
     const [showPassword, setShowPassword] = useState(false);
@@ -33,6 +34,13 @@ const Register = () => {
 
         setSuccess(false);
         setError("");
+
+        setFieldErrors((prev) => {
+            if (!prev[name]) return prev;
+            const next = { ...prev };
+            delete next[name];
+            return next;
+        });
     };
 
     // =========================
@@ -43,6 +51,13 @@ const Register = () => {
         setConfirmPassword(e.target.value);
         setSuccess(false);
         setError("");
+
+        setFieldErrors((prev) => {
+            if (!prev.confirmPassword) return prev;
+            const next = { ...prev };
+            delete next.confirmPassword;
+            return next;
+        });
     };
 
     // =========================
@@ -54,9 +69,12 @@ const Register = () => {
 
         setSuccess(false);
         setError("");
+        setFieldErrors({});
 
         if (formData.password !== confirmPassword) {
-            setError("Passwords do not match.");
+            setFieldErrors({
+                confirmPassword: "Passwords do not match."
+            });
             return;
         }
 
@@ -90,17 +108,38 @@ const Register = () => {
             }
 
             if (!response.ok) {
-                const errorMessage =
+                let errorMessage =
                     typeof data === "string"
                         ? data
-                        : data.message || "Registration failed.";
+                        : data?.message || data?.error || "Registration failed.";
 
-                throw new Error(errorMessage);
+                const registrationError = new Error(errorMessage);
+
+                // Bean Validation responses are returned as:
+                // { fullName: "...", email: "...", password: "...", phoneNumber: "..." }
+                if (
+                    data &&
+                    typeof data === "object" &&
+                    !Array.isArray(data)
+                ) {
+                    const validationErrors = Object.fromEntries(
+                        Object.entries(data).filter(
+                            ([, value]) => typeof value === "string"
+                        )
+                    );
+
+                    if (Object.keys(validationErrors).length > 0) {
+                        registrationError.fieldErrors = validationErrors;
+                    }
+                }
+
+                throw registrationError;
             }
 
             console.log("Registration successful:", data);
 
             setSuccess(true);
+            setFieldErrors({});
 
             setFormData({
                 fullName: "",
@@ -114,10 +153,15 @@ const Register = () => {
         } catch (error) {
             console.error("Registration error:", error);
 
-            setError(
-                error.message ||
-                "Something went wrong. Please try again."
-            );
+            if (error.fieldErrors) {
+                setFieldErrors(error.fieldErrors);
+                setError("");
+            } else {
+                setError(
+                    error.message ||
+                    "Something went wrong. Please try again."
+                );
+            }
         } finally {
             setLoading(false);
         }
@@ -228,6 +272,19 @@ const Register = () => {
                         background-color .25s ease,
                         box-shadow .25s ease,
                         transform .25s ease;
+                }
+
+                .register-input.field-error {
+                    border-color: rgba(248, 113, 113, .7);
+                    box-shadow: 0 0 0 4px rgba(248, 113, 113, .07);
+                }
+
+                .register-field-error {
+                    display: block;
+                    margin-top: 7px;
+                    font-size: 12px;
+                    line-height: 1.4;
+                    color: rgb(248, 113, 113);
                 }
 
                 .register-input:focus {
@@ -681,20 +738,27 @@ const Register = () => {
                                         placeholder="Enter your name"
                                         required
                                         autoComplete="name"
-                                        className="
+                                        className={`
                                             register-input
                                             w-full
                                             rounded-xl
                                             border
-                                            border-white/[0.08]
+                                            ${fieldErrors.fullName ? "field-error border-red-400/60" : "border-white/[0.08]"}
                                             bg-[#0d1511]
                                             px-4
                                             py-3.5
                                             text-sm
                                             text-white
                                             placeholder:text-gray-600
-                                        "
+                                        `}
+                                        aria-invalid={Boolean(fieldErrors.fullName)}
                                     />
+
+                                    {fieldErrors.fullName && (
+                                        <span className="register-field-error">
+                                            {fieldErrors.fullName}
+                                        </span>
+                                    )}
 
                                 </div>
 
@@ -719,20 +783,27 @@ const Register = () => {
                                         placeholder="you@example.com"
                                         required
                                         autoComplete="email"
-                                        className="
+                                        className={`
                                             register-input
                                             w-full
                                             rounded-xl
                                             border
-                                            border-white/[0.08]
+                                            ${fieldErrors.email ? "field-error border-red-400/60" : "border-white/[0.08]"}
                                             bg-[#0d1511]
                                             px-4
                                             py-3.5
                                             text-sm
                                             text-white
                                             placeholder:text-gray-600
-                                        "
+                                        `}
+                                        aria-invalid={Boolean(fieldErrors.email)}
                                     />
+
+                                    {fieldErrors.email && (
+                                        <span className="register-field-error">
+                                            {fieldErrors.email}
+                                        </span>
+                                    )}
 
                                 </div>
 
@@ -757,20 +828,27 @@ const Register = () => {
                                         placeholder="Enter your phone number"
                                         required
                                         autoComplete="tel"
-                                        className="
+                                        className={`
                                             register-input
                                             w-full
                                             rounded-xl
                                             border
-                                            border-white/[0.08]
+                                            ${fieldErrors.phoneNumber ? "field-error border-red-400/60" : "border-white/[0.08]"}
                                             bg-[#0d1511]
                                             px-4
                                             py-3.5
                                             text-sm
                                             text-white
                                             placeholder:text-gray-600
-                                        "
+                                        `}
+                                        aria-invalid={Boolean(fieldErrors.phoneNumber)}
                                     />
+
+                                    {fieldErrors.phoneNumber && (
+                                        <span className="register-field-error">
+                                            {fieldErrors.phoneNumber}
+                                        </span>
+                                    )}
 
                                 </div>
 
@@ -801,12 +879,12 @@ const Register = () => {
                                             placeholder="Create a password"
                                             required
                                             autoComplete="new-password"
-                                            className="
+                                            className={`
                                                 register-input
                                                 w-full
                                                 rounded-xl
                                                 border
-                                                border-white/[0.08]
+                                                ${fieldErrors.password ? "field-error border-red-400/60" : "border-white/[0.08]"}
                                                 bg-[#0d1511]
                                                 px-4
                                                 py-3.5
@@ -814,8 +892,15 @@ const Register = () => {
                                                 text-sm
                                                 text-white
                                                 placeholder:text-gray-600
-                                            "
+                                            `}
+                                            aria-invalid={Boolean(fieldErrors.password)}
                                         />
+
+                                        {fieldErrors.password && (
+                                            <span className="register-field-error">
+                                                {fieldErrors.password}
+                                            </span>
+                                        )}
 
                                         <button
                                             type="button"
@@ -873,12 +958,12 @@ const Register = () => {
                                             placeholder="Confirm your password"
                                             required
                                             autoComplete="new-password"
-                                            className="
+                                            className={`
                                                 register-input
                                                 w-full
                                                 rounded-xl
                                                 border
-                                                border-white/[0.08]
+                                                ${fieldErrors.confirmPassword ? "field-error border-red-400/60" : "border-white/[0.08]"}
                                                 bg-[#0d1511]
                                                 px-4
                                                 py-3.5
@@ -886,8 +971,15 @@ const Register = () => {
                                                 text-sm
                                                 text-white
                                                 placeholder:text-gray-600
-                                            "
+                                            `}
+                                            aria-invalid={Boolean(fieldErrors.confirmPassword)}
                                         />
+
+                                        {fieldErrors.confirmPassword && (
+                                            <span className="register-field-error">
+                                                {fieldErrors.confirmPassword}
+                                            </span>
+                                        )}
 
                                         <button
                                             type="button"
