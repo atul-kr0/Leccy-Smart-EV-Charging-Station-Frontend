@@ -2448,39 +2448,455 @@ const styles = `
         .garage-overview { grid-template-columns: 1fr; }
     }
 
+    /* =============================
+       MOBILE COMPACT LAYOUT
+       Desktop/tablet card sizing above remains unchanged.
+       ============================= */
     @media (max-width: 760px) {
-        .vehicles-page { padding: 28px 18px 50px; }
+        .vehicles-page {
+            padding: 20px 14px 36px;
+        }
+
+        .vehicles-header {
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
         .vehicles-header,
         .section-heading {
             align-items: flex-start;
             flex-direction: column;
         }
-        .header-actions { width: 100%; }
-        .header-actions > * { flex: 1; }
-        .section-heading > p { text-align: left; }
-        .vehicle-grid { grid-template-columns: 1fr; }
-        .overview-stats { grid-template-columns: 1fr 1fr; }
-        .bottom-feature { grid-template-columns: auto 1fr; }
-        .bottom-feature > a { grid-column: 2; }
-        .detail-hero { grid-template-columns: 1fr; }
-        .detail-hero > div:last-child { padding: 10px 25px 30px; }
-        .detail-grid { grid-template-columns: 1fr 1fr; }
+
+        .vehicles-header h1 {
+            margin: 7px 0 5px;
+            font-size: 34px;
+            line-height: 1.02;
+            letter-spacing: -.045em;
+        }
+
+        .vehicles-header p {
+            font-size: 13px;
+            line-height: 1.45;
+            max-width: 100%;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions > * {
+            flex: 1;
+        }
+
+        .add-button {
+            min-height: 44px;
+            border-radius: 11px;
+        }
+
+        .section-heading {
+            gap: 4px;
+            margin-bottom: 14px;
+        }
+
+        .section-heading > p {
+            text-align: left;
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        /* Explicit colour prevents global heading styles from making
+           "Charging profiles" disappear on mobile. */
+        .section-heading h2 {
+            color: #06243d;
+            font-size: 22px;
+            margin: 3px 0 0;
+        }
+
+        .section-heading .section-kicker {
+            color: #00a83b;
+        }
+
+        .vehicle-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .vehicle-card {
+            border-radius: 18px;
+        }
+
+        .card-image {
+            height: 158px;
+        }
+
+        .vehicle-card-image {
+            width: 94%;
+            height: 142px;
+        }
+
+        .live-badge {
+            left: 10px;
+            top: 10px;
+            padding: 6px 9px;
+            font-size: 9px;
+        }
+
+        .card-actions {
+            top: 9px;
+            right: 9px;
+            gap: 5px;
+        }
+
+        .card-actions button {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+        }
+
+        .card-content {
+            padding: 14px;
+        }
+
+        .brand-label {
+            gap: 5px;
+            font-size: 9px;
+        }
+
+        .brand-label img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .vehicle-title-row h3 {
+            margin-top: 2px;
+            font-size: 19px;
+        }
+
+        .registration {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 9px;
+        }
+
+        .registration span {
+            font-size: 8px;
+        }
+
+        .registration strong {
+            font-size: 10px;
+        }
+
+        .spec-grid {
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .spec {
+            gap: 7px;
+            padding: 8px;
+            border-radius: 10px;
+        }
+
+        .spec-icon {
+            width: 27px;
+            height: 27px;
+            border-radius: 8px;
+        }
+
+        .spec span {
+            font-size: 8px;
+        }
+
+        .spec strong {
+            font-size: 11px;
+        }
+
+        .card-footer {
+            gap: 8px;
+            margin-top: 11px;
+            padding-top: 11px;
+        }
+
+        .details-button,
+        .charge-link {
+            font-size: 11px;
+        }
+
+        .garage-overview {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 15px;
+            margin-bottom: 26px;
+            border-radius: 18px;
+        }
+
+        .overview-main {
+            align-items: center;
+            gap: 11px;
+        }
+
+        .overview-orb {
+            width: 48px;
+            height: 48px;
+            border-radius: 15px;
+        }
+
+        .overview-main h2 {
+            margin: 3px 0 2px;
+            font-size: 18px;
+        }
+
+        .overview-main p {
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .overview-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+        }
+
+        .overview-stats > div {
+            padding: 9px;
+            border-radius: 11px;
+        }
+
+        .overview-stats span {
+            font-size: 7px;
+        }
+
+        .overview-stats strong {
+            margin-top: 4px;
+            font-size: 18px;
+        }
+
+        .bottom-feature {
+            grid-template-columns: auto 1fr;
+        }
+
+        .bottom-feature > a {
+            grid-column: 2;
+        }
+
+        /* Keep the vehicle detail modal compact on phones. */
+        .modal-backdrop {
+            padding: 10px;
+        }
+
+        .vehicle-detail-modal {
+            width: 100%;
+            max-height: 88vh;
+            border-radius: 20px;
+        }
+
+        .vehicle-detail-modal > .modal-close {
+            right: 12px;
+            top: 12px;
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+        }
+
+        .detail-hero {
+            grid-template-columns: 1fr;
+            min-height: 0;
+        }
+
+        .detail-image {
+            height: 145px;
+        }
+
+        .detail-vehicle-image {
+            width: 92%;
+            height: 132px;
+        }
+
+        .detail-hero > div:last-child {
+            padding: 4px 18px 18px;
+        }
+
+        .detail-hero h2 {
+            margin: 5px 0 3px;
+            font-size: 26px;
+            line-height: 1.05;
+        }
+
+        .detail-hero p {
+            font-size: 13px;
+        }
+
+        .detail-status {
+            margin-top: 10px;
+            padding: 7px 10px;
+            font-size: 10px;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 14px 15px;
+        }
+
+        .detail-grid > div {
+            padding: 10px;
+            border-radius: 11px;
+        }
+
+        .detail-grid span {
+            font-size: 8px;
+        }
+
+        .detail-grid strong {
+            margin-top: 4px;
+            font-size: 12px;
+        }
+
+        .detail-actions {
+            gap: 7px;
+            padding: 0 15px 15px;
+        }
+
+        .detail-actions .add-button,
+        .detail-actions .outline-button {
+            min-height: 42px;
+            font-size: 12px;
+        }
     }
 
     @media (max-width: 520px) {
-        .vehicles-header h1 { font-size: 42px; }
-        .garage-overview { padding: 18px; }
-        .overview-main { align-items: flex-start; }
-        .overview-stats { grid-template-columns: 1fr 1fr; }
-        .form-modal { padding: 20px; }
-        .form-grid { grid-template-columns: 1fr; }
-        .form-grid label.full { grid-column: auto; }
-        .form-actions { flex-direction: column-reverse; }
-        .form-actions > * { width: 100%; }
-        .detail-grid { grid-template-columns: 1fr; }
-        .detail-actions { flex-direction: column; }
-        .detail-actions > * { width: 100%; }
-        .card-image { height: 200px; }
+        .vehicles-page {
+            padding: 16px 12px 30px;
+        }
+
+        .eyebrow {
+            font-size: 10px;
+        }
+
+        .eyebrow-bolt {
+            width: 22px;
+            height: 22px;
+        }
+
+        .vehicles-header h1 {
+            font-size: 31px;
+        }
+
+        .vehicles-header p {
+            font-size: 12px;
+        }
+
+        .garage-overview {
+            padding: 13px;
+            margin-bottom: 22px;
+        }
+
+        .overview-orb {
+            width: 44px;
+            height: 44px;
+        }
+
+        .overview-main h2 {
+            font-size: 17px;
+        }
+
+        .overview-main p {
+            font-size: 10px;
+        }
+
+        .overview-stats > div {
+            padding: 8px;
+        }
+
+        .overview-stats strong {
+            font-size: 17px;
+        }
+
+        .section-heading h2 {
+            font-size: 21px;
+        }
+
+        .section-heading > p {
+            font-size: 10px;
+        }
+
+        .card-image {
+            height: 145px;
+        }
+
+        .vehicle-card-image {
+            height: 130px;
+        }
+
+        .card-content {
+            padding: 12px;
+        }
+
+        .spec {
+            padding: 7px;
+        }
+
+        .spec-icon {
+            width: 25px;
+            height: 25px;
+        }
+
+        .spec strong {
+            font-size: 10px;
+        }
+
+        .detail-image {
+            height: 125px;
+        }
+
+        .detail-vehicle-image {
+            height: 115px;
+        }
+
+        .detail-hero > div:last-child {
+            padding: 2px 15px 14px;
+        }
+
+        .detail-hero h2 {
+            font-size: 23px;
+        }
+
+        .detail-grid {
+            padding: 11px 12px;
+        }
+
+        .detail-grid > div {
+            padding: 9px;
+        }
+
+        .detail-actions {
+            flex-direction: column;
+            padding: 0 12px 12px;
+        }
+
+        .detail-actions > * {
+            width: 100%;
+        }
+
+        .form-modal {
+            padding: 18px;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-grid label.full {
+            grid-column: auto;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .form-actions > * {
+            width: 100%;
+        }
     }
 
     @media (prefers-reduced-motion: reduce) {
