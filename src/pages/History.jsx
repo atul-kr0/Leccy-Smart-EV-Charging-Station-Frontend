@@ -2279,36 +2279,64 @@ const PageStyles = () => (
             }
 
             .history-summary {
-                grid-template-columns: 1fr;
-                gap: 9px;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0;
                 margin-top: 20px;
+                padding: 6px;
+                border: 1px solid #E0E8EC;
+                border-radius: 16px;
+                background: white;
+                box-shadow:
+                    0 8px 25px rgba(7,26,45,.035);
             }
 
             .summary-card {
-                min-height: 76px;
-                gap: 11px;
-                padding: 13px 14px;
-                border-radius: 14px;
+                min-height: 82px;
+                gap: 6px;
+
+            .history-summary .summary-card + .summary-card {
+                border-left: 1px solid #EDF1F3;
+                border-radius: 0;
+            }
+
+                padding: 9px 5px;
+                border: none;
+                border-radius: 11px;
+                background: transparent;
+                box-shadow: none;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
             }
 
             .summary-icon {
-                width: 35px;
-                height: 35px;
-                border-radius: 10px;
+                width: 31px;
+                height: 31px;
+                border-radius: 9px;
+            }
+
+            .summary-icon svg {
+                width: 15px;
+                height: 15px;
             }
 
             .summary-card span {
                 font-size: 7px;
+                line-height: 1;
+                letter-spacing: .08em;
             }
 
             .summary-card strong {
-                margin-top: 3px;
+                margin-top: 2px;
                 font-size: 22px;
+                line-height: .95;
             }
 
             .summary-card small {
-                margin-top: 3px;
-                font-size: 9px;
+                margin-top: 2px;
+                font-size: 8px;
+                line-height: 1.15;
             }
 
             .history-controls {
@@ -2320,25 +2348,30 @@ const PageStyles = () => (
 
             .history-search,
             .history-filter {
-                height: 39px;
-                border-radius: 10px;
+                height: 43px;
+                border-radius: 11px;
             }
 
             .history-search {
-                padding: 0 11px;
+                padding: 0 12px;
+            }
+
+            .history-search svg {
+                width: 19px;
+                height: 19px;
             }
 
             .history-search input {
-                font-size: 11px;
+                font-size: 12px;
             }
 
             .history-filter {
                 width: 100%;
-                padding: 0 10px;
+                padding: 0 11px;
             }
 
             .history-filter select {
-                font-size: 10px;
+                font-size: 11px;
             }
 
             .history-results-header {
@@ -2352,11 +2385,12 @@ const PageStyles = () => (
 
             .history-results-header h2 {
                 margin-top: 4px;
-                font-size: 18px;
+                font-size: 20px;
+                line-height: 1.05;
             }
 
             .result-count {
-                font-size: 9px;
+                font-size: 10px;
             }
 
             .history-list {
@@ -2365,40 +2399,42 @@ const PageStyles = () => (
 
             .history-card {
                 grid-template-columns:
-                    34px minmax(0, 1fr) 18px;
+                    38px minmax(0, 1fr) 20px;
 
-                gap: 9px;
-                padding: 12px 11px;
+                gap: 10px;
+                padding: 14px 12px;
             }
 
             .history-card-icon {
-                width: 34px;
-                height: 34px;
-                border-radius: 10px;
+                width: 38px;
+                height: 38px;
+                border-radius: 11px;
             }
 
             .history-card-icon svg {
-                width: 16px;
-                height: 16px;
+                width: 17px;
+                height: 17px;
             }
 
             .history-card-title {
-                gap: 5px;
+                gap: 6px;
             }
 
             .history-card-title h3 {
-                font-size: 11px;
+                font-size: 13px;
+                line-height: 1.15;
             }
 
             .history-card-main > p {
-                margin-top: 3px;
-                font-size: 8px;
+                margin-top: 4px;
+                font-size: 9px;
+                line-height: 1.25;
             }
 
             .history-status {
                 gap: 4px;
-                padding: 4px 6px;
-                font-size: 6px;
+                padding: 4px 7px;
+                font-size: 7px;
             }
 
             .history-status > span {
@@ -2411,8 +2447,8 @@ const PageStyles = () => (
             }
 
             .history-card-arrow svg {
-                width: 14px;
-                height: 14px;
+                width: 16px;
+                height: 16px;
             }
 
             .history-card-main {
@@ -2527,29 +2563,40 @@ const PageStyles = () => (
 
             .history-summary {
                 margin-top: 17px;
+                padding: 5px;
+                border-radius: 14px;
             }
 
             .summary-card {
-                min-height: 70px;
-                padding: 11px 12px;
+                min-height: 76px;
+                padding: 8px 3px;
             }
 
             .summary-icon {
-                width: 32px;
-                height: 32px;
+                width: 30px;
+                height: 30px;
                 border-radius: 9px;
             }
 
+            .summary-card span {
+                font-size: 6.5px;
+            }
+
             .summary-card strong {
-                font-size: 20px;
+                font-size: 21px;
             }
 
             .summary-card small {
-                font-size: 8px;
+                font-size: 7.5px;
             }
 
             .history-controls {
                 margin-top: 15px;
+            }
+
+            .history-search,
+            .history-filter {
+                height: 42px;
             }
 
             .history-results-header {
@@ -2557,33 +2604,33 @@ const PageStyles = () => (
             }
 
             .history-results-header h2 {
-                font-size: 17px;
+                font-size: 19px;
             }
 
             .history-card {
                 grid-template-columns:
-                    31px minmax(0, 1fr) 16px;
+                    36px minmax(0, 1fr) 18px;
 
-                gap: 8px;
-                padding: 10px 9px;
+                gap: 9px;
+                padding: 13px 11px;
             }
 
             .history-card-icon {
-                width: 31px;
-                height: 31px;
+                width: 36px;
+                height: 36px;
             }
 
             .history-card-title h3 {
-                font-size: 10px;
+                font-size: 12px;
             }
 
             .history-card-main > p {
-                font-size: 7px;
+                font-size: 8.5px;
             }
 
             .history-status {
-                padding: 3px 5px;
-                font-size: 5.5px;
+                padding: 4px 6px;
+                font-size: 6.5px;
             }
 
             .history-drawer {
