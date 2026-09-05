@@ -4069,16 +4069,239 @@ setBookingStation(
                         grid-template-columns: 1fr;
                     }
 
+                    /* Mobile station details popup: compact bottom-style card.
+                       Desktop popup dimensions remain unchanged. */
                     .fc-react-popup {
-                        width: calc(100vw - 24px);
+                        width: calc(100vw - 28px);
                         min-width: 0;
                         min-height: 0;
-                        max-width: calc(100vw - 24px);
-                        max-height: calc(100vh - 24px);
+                        max-width: calc(100vw - 28px);
+                        max-height: min(62vh, 520px);
+                        border-radius: 16px;
+                    }
+
+                    .fc-react-popup .fc-popup {
+                        padding: 18px 18px 16px;
+                    }
+
+                    .fc-react-popup-close {
+                        top: 8px;
+                        right: 8px;
+                        width: 30px;
+                        height: 30px;
+                        font-size: 18px;
+                    }
+
+                    .fc-popup-name {
+                        font-size: 18px;
+                        line-height: 1.2;
+                        padding-right: 34px;
+                    }
+
+                    .fc-popup-address {
+                        margin-top: 4px;
+                        font-size: 11px;
+                        line-height: 1.3;
+                    }
+
+                    .fc-popup-summary {
+                        gap: 5px;
+                        margin-top: 10px;
+                    }
+
+                    .fc-popup-pill {
+                        padding: 7px 9px;
+                        border-radius: 8px;
+                        font-size: 10px;
+                    }
+
+                    .fc-connector-section {
+                        margin-top: 11px;
+                        padding-top: 11px;
+                    }
+
+                    .fc-popup-section-title {
+                        margin-bottom: 7px;
+                        font-size: 10px;
+                    }
+
+                    .fc-connector {
+                        padding: 8px 0;
+                    }
+
+                    .fc-connector-name {
+                        margin-bottom: 6px;
+                        font-size: 12px;
                     }
 
                     .fc-connector-stats {
                         grid-template-columns: 1fr 1fr;
+                        gap: 5px;
+                    }
+
+                    .fc-connector-stat {
+                        padding: 6px 7px;
+                        border-radius: 7px;
+                        font-size: 9px;
+                    }
+
+                    .fc-queue {
+                        margin-top: 10px;
+                        padding-top: 11px;
+                    }
+
+                    .fc-queue-row {
+                        padding: 6px 0;
+                        font-size: 11px;
+                    }
+
+                    .fc-queue-time {
+                        padding: 5px 8px;
+                        border-radius: 8px;
+                    }
+
+                    .fc-popup-actions {
+                        gap: 7px;
+                        margin-top: 12px;
+                    }
+
+                    .fc-popup-button {
+                        height: 43px;
+                        border-radius: 9px;
+                        font-size: 12px;
+                    }
+
+                    /* Mobile smart-charger modal: shorter header and tighter form. */
+                    .fc-overlay {
+                        padding: 12px;
+                        align-items: center;
+                    }
+
+                    .fc-modal {
+                        width: calc(100vw - 24px);
+                        max-width: calc(100vw - 24px);
+                        max-height: min(78vh, 700px);
+                        border-radius: 18px;
+                    }
+
+                    .fc-modal-header {
+                        padding: 17px 18px 13px;
+                    }
+
+                    .fc-modal-kicker {
+                        font-size: 10px;
+                    }
+
+                    .fc-modal-title {
+                        margin-top: 4px;
+                        padding-right: 38px;
+                        font-size: 23px;
+                        line-height: 1.15;
+                    }
+
+                    .fc-modal-description {
+                        margin-top: 5px;
+                        font-size: 11px;
+                        line-height: 1.35;
+                    }
+
+                    .fc-modal-close {
+                        top: 12px;
+                        right: 12px;
+                        width: 34px;
+                        height: 34px;
+                        border-radius: 9px;
+                    }
+
+                    .fc-modal-content {
+                        padding: 14px 18px 18px;
+                    }
+
+                    .fc-field {
+                        margin-top: 13px;
+                    }
+
+                    .fc-label {
+                        margin-bottom: 6px;
+                        font-size: 12px;
+                    }
+
+                    .fc-mode-grid {
+                        gap: 7px;
+                    }
+
+                    .fc-mode {
+                        padding: 11px 12px;
+                        border-radius: 11px;
+                    }
+
+                    .fc-mode-title {
+                        font-size: 13px;
+                    }
+
+                    .fc-mode-copy {
+                        margin-top: 3px;
+                        font-size: 10px;
+                        line-height: 1.3;
+                    }
+
+                    .fc-select-trigger,
+                    .fc-number {
+                        min-height: 45px;
+                        height: 45px;
+                        font-size: 13px;
+                    }
+
+                    .fc-battery-grid {
+                        gap: 9px;
+                        margin-top: 13px;
+                    }
+
+                    .fc-confirm {
+                        height: 45px;
+                        margin-top: 14px;
+                        border-radius: 11px;
+                        font-size: 13px;
+                    }
+
+                    .fc-priority-grid {
+                        gap: 6px;
+                    }
+
+                    .fc-priority {
+                        min-height: 43px;
+                        padding: 7px 9px;
+                        font-size: 11px;
+                    }
+
+                    .fc-recommendation {
+                        padding: 12px;
+                        margin-bottom: 8px;
+                        border-radius: 11px;
+                    }
+
+                    .fc-rec-name {
+                        font-size: 14px;
+                    }
+
+                    .fc-score {
+                        font-size: 19px;
+                    }
+
+                    .fc-rec-stats {
+                        gap: 5px;
+                        margin-top: 9px;
+                    }
+
+                    .fc-rec-stat {
+                        padding: 7px;
+                        border-radius: 8px;
+                    }
+
+                    .fc-view-button {
+                        height: 37px;
+                        margin-top: 8px;
+                        font-size: 11px;
                     }
                 }
 
