@@ -569,9 +569,6 @@ const History = () => {
     const [loading, setLoading] =
         useState(true);
 
-    const [refreshing, setRefreshing] =
-        useState(false);
-
     const [error, setError] =
         useState("");
 
@@ -592,11 +589,8 @@ const History = () => {
 
                 if (initial) {
                     setLoading(true);
-                } else {
-                    setRefreshing(true);
+                    setError("");
                 }
-
-                setError("");
 
                 const data =
                     await apiFetch(API_URL);
@@ -628,8 +622,6 @@ const History = () => {
 
                 if (initial) {
                     setLoading(false);
-                } else {
-                    setRefreshing(false);
                 }
 
             }
@@ -640,7 +632,51 @@ const History = () => {
 
 
     useEffect(() => {
-        fetchBookings(true);
+        let cancelled = false;
+
+        const loadInitialHistory = async () => {
+            if (!cancelled) {
+                await fetchBookings(true);
+            }
+        };
+
+        loadInitialHistory();
+
+        /*
+         * Keep history synchronized automatically.
+         *
+         * The backend is polled in the background so the user does not
+         * need a Refresh button. Changes such as COMPLETED, CANCELLED,
+         * or EXPIRED bookings appear automatically on the next sync.
+         */
+        const syncInterval = window.setInterval(() => {
+            if (!cancelled) {
+                fetchBookings(false);
+            }
+        }, 2000);
+
+        /*
+         * Refresh immediately when the user returns to this tab.
+         */
+        const handleVisibilityChange = () => {
+            if (!document.hidden && !cancelled) {
+                fetchBookings(false);
+            }
+        };
+
+        document.addEventListener(
+            "visibilitychange",
+            handleVisibilityChange
+        );
+
+        return () => {
+            cancelled = true;
+            window.clearInterval(syncInterval);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
     }, [fetchBookings]);
 
 
@@ -824,23 +860,6 @@ const History = () => {
 
                         </div>
 
-                        <button
-                            type="button"
-                            className="history-refresh"
-                            onClick={() =>
-                                fetchBookings(false)
-                            }
-                            disabled={refreshing}
-                        >
-                            <Icon
-                                name="history"
-                                size={16}
-                            />
-
-                            {refreshing
-                                ? "Refreshing"
-                                : "Refresh"}
-                        </button>
 
                     </header>
 
@@ -1263,41 +1282,6 @@ const PageStyles = () => (
             font-size: 13px;
             line-height: 1.6;
         }
-
-        .history-refresh {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-
-            gap: 8px;
-
-            height: 38px;
-            padding: 0 14px;
-
-            flex-shrink: 0;
-
-            border: 1px solid #DDE6EA;
-            border-radius: 11px;
-
-            background: white;
-
-            color: #00A83B;
-
-            font-size: 11px;
-            font-weight: 750;
-
-            cursor: pointer;
-        }
-
-        .history-refresh:hover {
-            background: #F7FCF9;
-        }
-
-        .history-refresh:disabled {
-            opacity: .55;
-            cursor: wait;
-        }
-
 
         /* =========================
            SUMMARY
@@ -2247,51 +2231,280 @@ const PageStyles = () => (
 
         @media (max-width: 760px) {
 
+            /*
+             * Mobile layout
+             *
+             * Keep the desktop composition untouched. On phones the
+             * page uses tighter spacing, smaller type and compact cards
+             * so more useful history content fits on screen.
+             */
+
             .history-page {
-                padding: 28px 18px 50px;
+                padding: 20px 14px 36px;
+            }
+
+            .history-shell {
+                width: 100%;
             }
 
             .history-hero {
                 align-items: flex-start;
                 flex-direction: column;
+                gap: 0;
             }
 
-            .history-refresh {
-                width: 100%;
+            .history-eyebrow {
+                font-size: 9px;
+            }
+
+            .history-eyebrow span {
+                width: 20px;
+                height: 20px;
+                border-radius: 6px;
+            }
+
+            .history-hero h1 {
+                margin-top: 9px;
+                font-size: 31px;
+                line-height: 1.02;
+                letter-spacing: -.045em;
+                max-width: 330px;
+            }
+
+            .history-hero p {
+                max-width: 360px;
+                margin-top: 9px;
+                font-size: 11px;
+                line-height: 1.45;
             }
 
             .history-summary {
                 grid-template-columns: 1fr;
+                gap: 9px;
+                margin-top: 20px;
+            }
+
+            .summary-card {
+                min-height: 76px;
+                gap: 11px;
+                padding: 13px 14px;
+                border-radius: 14px;
+            }
+
+            .summary-icon {
+                width: 35px;
+                height: 35px;
+                border-radius: 10px;
+            }
+
+            .summary-card span {
+                font-size: 7px;
+            }
+
+            .summary-card strong {
+                margin-top: 3px;
+                font-size: 22px;
+            }
+
+            .summary-card small {
+                margin-top: 3px;
+                font-size: 9px;
             }
 
             .history-controls {
                 align-items: stretch;
                 flex-direction: column;
+                gap: 7px;
+                margin-top: 18px;
+            }
+
+            .history-search,
+            .history-filter {
+                height: 39px;
+                border-radius: 10px;
+            }
+
+            .history-search {
+                padding: 0 11px;
+            }
+
+            .history-search input {
+                font-size: 11px;
             }
 
             .history-filter {
                 width: 100%;
+                padding: 0 10px;
+            }
+
+            .history-filter select {
+                font-size: 10px;
+            }
+
+            .history-results-header {
+                margin-top: 22px;
+                margin-bottom: 9px;
+            }
+
+            .section-kicker {
+                font-size: 8px;
+            }
+
+            .history-results-header h2 {
+                margin-top: 4px;
+                font-size: 18px;
+            }
+
+            .result-count {
+                font-size: 9px;
+            }
+
+            .history-list {
+                border-radius: 14px;
             }
 
             .history-card {
                 grid-template-columns:
-                    42px minmax(0, 1fr) 22px;
+                    34px minmax(0, 1fr) 18px;
 
-                gap: 12px;
-
-                padding: 16px;
+                gap: 9px;
+                padding: 12px 11px;
             }
 
-            .history-card-detail {
-                display: none;
+            .history-card-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+
+            .history-card-icon svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .history-card-title {
+                gap: 5px;
+            }
+
+            .history-card-title h3 {
+                font-size: 11px;
+            }
+
+            .history-card-main > p {
+                margin-top: 3px;
+                font-size: 8px;
+            }
+
+            .history-status {
+                gap: 4px;
+                padding: 4px 6px;
+                font-size: 6px;
+            }
+
+            .history-status > span {
+                width: 4px;
+                height: 4px;
             }
 
             .history-card-arrow {
                 grid-column: 3;
             }
 
+            .history-card-arrow svg {
+                width: 14px;
+                height: 14px;
+            }
+
             .history-card-main {
                 grid-column: 2;
+            }
+
+            .history-empty {
+                min-height: 220px;
+                padding: 30px 18px;
+                border-radius: 14px;
+            }
+
+            .history-empty-icon {
+                width: 48px;
+                height: 48px;
+                margin-bottom: 12px;
+                border-radius: 14px;
+            }
+
+            .history-empty h3 {
+                font-size: 18px;
+            }
+
+            .history-empty p {
+                font-size: 10px;
+            }
+
+            .history-empty button {
+                height: 34px;
+                margin-top: 14px;
+                padding: 0 13px;
+                font-size: 10px;
+            }
+
+            .history-drawer {
+                width: min(390px, 100%);
+                padding: 20px 15px;
+            }
+
+            .drawer-header {
+                gap: 12px;
+            }
+
+            .drawer-header h2 {
+                margin-top: 5px;
+                font-size: 20px;
+            }
+
+            .drawer-status {
+                margin-top: 13px;
+            }
+
+            .drawer-station {
+                gap: 10px;
+                margin-top: 17px;
+                padding-bottom: 17px;
+            }
+
+            .drawer-station-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 11px;
+            }
+
+            .drawer-station strong {
+                font-size: 14px;
+            }
+
+            .drawer-grid {
+                gap: 7px;
+                margin-top: 16px;
+            }
+
+            .drawer-grid > div {
+                min-height: 60px;
+                padding: 10px;
+                border-radius: 10px;
+            }
+
+            .drawer-grid strong {
+                margin-top: 4px;
+                font-size: 10px;
+            }
+
+            .drawer-note {
+                gap: 8px;
+                margin-top: 15px;
+                padding: 11px;
+            }
+
+            .drawer-note p {
+                font-size: 10px;
             }
 
         }
@@ -2299,12 +2512,82 @@ const PageStyles = () => (
 
         @media (max-width: 500px) {
 
+            .history-page {
+                padding: 17px 12px 30px;
+            }
+
             .history-hero h1 {
-                font-size: 39px;
+                font-size: 28px;
+                max-width: 300px;
+            }
+
+            .history-hero p {
+                font-size: 10px;
+            }
+
+            .history-summary {
+                margin-top: 17px;
+            }
+
+            .summary-card {
+                min-height: 70px;
+                padding: 11px 12px;
+            }
+
+            .summary-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 9px;
+            }
+
+            .summary-card strong {
+                font-size: 20px;
+            }
+
+            .summary-card small {
+                font-size: 8px;
+            }
+
+            .history-controls {
+                margin-top: 15px;
+            }
+
+            .history-results-header {
+                margin-top: 18px;
+            }
+
+            .history-results-header h2 {
+                font-size: 17px;
+            }
+
+            .history-card {
+                grid-template-columns:
+                    31px minmax(0, 1fr) 16px;
+
+                gap: 8px;
+                padding: 10px 9px;
+            }
+
+            .history-card-icon {
+                width: 31px;
+                height: 31px;
+            }
+
+            .history-card-title h3 {
+                font-size: 10px;
+            }
+
+            .history-card-main > p {
+                font-size: 7px;
+            }
+
+            .history-status {
+                padding: 3px 5px;
+                font-size: 5.5px;
             }
 
             .history-drawer {
-                padding: 24px 18px;
+                padding: 18px 13px;
             }
 
             .drawer-grid {
