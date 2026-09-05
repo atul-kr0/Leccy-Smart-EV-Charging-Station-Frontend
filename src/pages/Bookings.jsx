@@ -2,6 +2,7 @@ import React, {
     useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
 } from "react";
 
@@ -202,14 +203,6 @@ const Icon = ({ name, size = 20 }) => {
         bolt: (
             <path d="m13 2-8 11h6l-1 9 8-12h-6l1-8Z" />
         ),
-        refresh: (
-            <>
-                <path d="M20 11a8 8 0 0 0-14.9-3" />
-                <path d="M4 4v4h4" />
-                <path d="M4 13a8 8 0 0 0 14.9 3" />
-                <path d="M20 20v-4h-4" />
-            </>
-        ),
         clock: (
             <>
                 <circle cx="12" cy="12" r="9" />
@@ -267,18 +260,20 @@ const Icon = ({ name, size = 20 }) => {
 const Bookings = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [refreshing, setRefreshing] = useState(false);
+    const [lastSyncedAt, setLastSyncedAt] = useState(null);
+    const syncInFlight = useRef(false);
     const [error, setError] = useState("");
     const [cancellingId, setCancellingId] = useState(null);
     const [stoppingId, setStoppingId] = useState(null);
     const [now, setNow] = useState(Date.now());
 
     const fetchBookings = useCallback(async (initial = false) => {
+        if (syncInFlight.current) return;
+
+        syncInFlight.current = true;
+
         try {
             if (initial) setLoading(true);
-            else setRefreshing(true);
-
-            setError("");
 
             const data = await apiFetch(API_URL);
 
@@ -290,28 +285,78 @@ const Bookings = () => {
                         ? data.bookings
                         : [];
 
-            setBookings(list);
-        } catch (err) {
-            console.error("Booking loading error:", err);
+            /*
+             * This page is for active bookings only.
+             * As soon as the backend changes a booking to a terminal
+             * state (COMPLETED, CANCELLED, EXPIRED, NO_SHOW, etc.),
+             * remove it from this page automatically.
+             * No full browser reload and no error message are needed.
+             */
+            setBookings(list.filter((booking) => isLiveStatus(booking?.status)));
+            setError("");
+            setLastSyncedAt(Date.now());
 
-            setError(
-                err.message ||
-                    "Unable to load your bookings."
-            );
+            /* Clean up countdown storage for bookings that are no longer live. */
+            list.forEach((booking) => {
+                if (
+                    booking?.bookingId
+                    && !isLiveStatus(booking?.status)
+                ) {
+                    localStorage.removeItem(
+                        getTimerKey(booking.bookingId)
+                    );
+                }
+            });
+        } catch (err) {
+            console.error("Booking sync failed:", err);
+
+            /*
+             * Only the first load needs a visible error.
+             * Background sync failures should not replace a working
+             * booking card or flash an error while the page is live.
+             */
+            if (initial) {
+                setError(
+                    err.message ||
+                        "Unable to load your bookings."
+                );
+            }
         } finally {
             if (initial) setLoading(false);
-            else setRefreshing(false);
+            syncInFlight.current = false;
         }
     }, []);
 
     useEffect(() => {
         fetchBookings(true);
 
+        /*
+         * Background polling keeps booking status current without
+         * forcing a full browser reload.
+         */
         const interval = window.setInterval(() => {
             fetchBookings(false);
-        }, 5000);
+        }, 3000);
 
-        return () => window.clearInterval(interval);
+        /* Refresh immediately when the user returns to the tab. */
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                fetchBookings(false);
+            }
+        };
+
+        document.addEventListener(
+            "visibilitychange",
+            handleVisibilityChange
+        );
+
+        return () => {
+            window.clearInterval(interval);
+            document.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange
+            );
+        };
     }, [fetchBookings]);
 
     const activeBooking = useMemo(
@@ -507,21 +552,21 @@ const Bookings = () => {
                             </p>
                         </div>
 
-                        <button
-                            className="refresh-button"
-                            onClick={() =>
-                                fetchBookings(false)
+                        <div
+                            className="live-sync"
+                            aria-live="polite"
+                            title={
+                                lastSyncedAt
+                                    ? `Last synced ${new Date(lastSyncedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
+                                    : "Booking status updates automatically"
                             }
-                            disabled={refreshing}
                         >
-                            <Icon
-                                name="refresh"
-                                size={17}
-                            />
-                            {refreshing
-                                ? "Refreshing"
-                                : "Refresh"}
-                        </button>
+                            <span className="live-sync-dot" />
+                            <div>
+                                <strong>Live updates</strong>
+                                <small>Booking status syncs automatically</small>
+                            </div>
+                        </div>
                     </header>
 
                     {/* =================================================
@@ -1411,32 +1456,45 @@ const PageStyles = () => (
             line-height: 1.65;
         }
 
-        .refresh-button {
+        .live-sync {
             flex-shrink: 0;
             display: flex;
             align-items: center;
-            gap: 9px;
-            height: 46px;
-            padding: 0 17px;
-            border: 1px solid #D9E3E9;
-            border-radius: 13px;
-            background: white;
-            color: #00A83B;
-            font-weight: 750;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(7,26,45,.05);
-            transition: .2s ease;
+            gap: 10px;
+            min-height: 46px;
+            padding: 9px 13px;
+            border: 1px solid #DCE8E0;
+            border-radius: 14px;
+            background: #F7FCF9;
+            box-shadow: 0 6px 20px rgba(7,26,45,.04);
         }
 
-        .refresh-button:hover {
-            transform: translateY(-2px);
-            border-color: #A8DDBB;
-            box-shadow: 0 10px 26px rgba(7,26,45,.08);
+        .live-sync-dot {
+            width: 9px;
+            height: 9px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: #00A83B;
+            box-shadow: 0 0 0 5px rgba(0,168,59,.10);
+            animation: pulse 1.8s infinite;
         }
 
-        .refresh-button:disabled {
-            opacity: .6;
-            cursor: wait;
+        .live-sync div {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .live-sync strong {
+            color: #008E34;
+            font-size: 12px;
+            line-height: 1.1;
+        }
+
+        .live-sync small {
+            color: #78909F;
+            font-size: 10px;
+            line-height: 1.2;
         }
 
         /* =========================
@@ -2421,76 +2479,347 @@ const PageStyles = () => (
 
         @media (max-width: 650px) {
             .bookings-page {
-                padding: 25px 15px 45px;
+                padding: 18px 12px 32px;
             }
 
             .booking-hero {
                 align-items: flex-start;
                 flex-direction: column;
+                gap: 10px;
+                margin-bottom: 18px;
+            }
+
+            .eyebrow,
+            .section-kicker {
+                font-size: 10px;
+                letter-spacing: .13em;
             }
 
             .booking-hero h1 {
-                font-size: 44px;
+                margin-top: 5px;
+                max-width: 330px;
+                font-size: 35px;
+                line-height: 1.02;
             }
 
-            .refresh-button {
+            .booking-hero p {
+                max-width: 360px;
+                margin-top: 8px;
+                font-size: 12px;
+                line-height: 1.45;
+            }
+
+            .live-sync {
                 width: 100%;
-                justify-content: center;
+                min-height: 40px;
+                padding: 8px 11px;
+                border-radius: 12px;
+            }
+
+            .live-sync strong {
+                font-size: 11px;
+            }
+
+            .live-sync small {
+                font-size: 9px;
             }
 
             .overview-grid {
                 grid-template-columns: 1fr;
+                gap: 8px;
+                margin-bottom: 24px;
             }
 
             .overview-card,
             .overview-action-card {
-                min-height: 115px;
+                min-height: 78px;
+                gap: 11px;
+                padding: 13px 14px;
+                border-radius: 15px;
+            }
+
+            .overview-icon {
+                width: 34px;
+                height: 34px;
+                border-radius: 10px;
+            }
+
+            .overview-copy span {
+                font-size: 9px;
+            }
+
+            .overview-copy strong,
+            .overview-action-card .overview-copy strong {
+                margin-top: 4px;
+                font-size: 22px;
+            }
+
+            .overview-copy small {
+                margin-top: 4px;
+                font-size: 10px;
+            }
+
+            .overview-card > svg,
+            .overview-action-card > svg {
+                width: 14px;
+                height: 14px;
             }
 
             .section-heading {
                 align-items: flex-start;
                 flex-direction: column;
+                gap: 6px;
+                margin-bottom: 11px;
+            }
+
+            .section-heading h2 {
+                margin-top: 3px;
+                font-size: 20px;
+            }
+
+            .section-heading p {
+                margin-top: 4px;
+                font-size: 11px;
+            }
+
+            .live-badge {
+                padding: 6px 9px;
+                font-size: 9px;
+            }
+
+            .active-card {
+                border-radius: 17px;
             }
 
             .active-card-top {
                 align-items: flex-start;
                 flex-direction: column;
-                padding: 19px;
+                gap: 11px;
+                padding: 14px;
+            }
+
+            .station-identity {
+                gap: 10px;
+            }
+
+            .station-icon {
+                width: 38px;
+                height: 38px;
+                border-radius: 11px;
+            }
+
+            .status-line {
+                font-size: 9px;
+            }
+
+            .station-identity h3 {
+                margin-top: 3px;
+                font-size: 17px;
+            }
+
+            .station-identity p {
+                margin-top: 3px;
+                font-size: 10px;
             }
 
             .danger-outline {
                 width: 100%;
+                height: 36px;
+                font-size: 11px;
             }
 
-            .charging-details {
-                padding: 25px 19px;
+            .charging-layout {
+                min-height: 0;
+            }
+
+            .timer-column {
+                padding: 22px 12px 18px;
             }
 
             .timer-orbit {
-                width: 245px;
-                height: 245px;
+                width: 185px;
+                height: 185px;
+            }
+
+            .timer-glow {
+                width: 135px;
+                height: 135px;
+            }
+
+            .timer-content strong {
+                font-size: 30px;
+            }
+
+            .timer-label {
+                font-size: 8px;
+            }
+
+            .timer-sub {
+                margin-top: 5px;
+                font-size: 9px;
+            }
+
+            .charging-now {
+                margin-top: 10px;
+                font-size: 10px;
+            }
+
+            .charging-details {
+                padding: 18px 14px;
+            }
+
+            .charging-intro h4 {
+                margin-top: 5px;
+                font-size: 19px;
+            }
+
+            .charging-intro p {
+                margin-top: 5px;
+                font-size: 11px;
+                line-height: 1.45;
             }
 
             .detail-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                gap: 7px;
+                margin-top: 15px;
+            }
+
+            .detail-box {
+                min-height: 54px;
+                gap: 7px;
+                padding: 8px;
+                border-radius: 11px;
+            }
+
+            .detail-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+            }
+
+            .detail-box span {
+                font-size: 8px;
+            }
+
+            .detail-box strong {
+                margin-top: 3px;
+                font-size: 11px;
+            }
+
+            .session-progress {
+                margin-top: 16px;
+            }
+
+            .stop-button {
+                height: 43px;
+                margin-top: 15px;
+                border-radius: 11px;
+                font-size: 11px;
+            }
+
+            .precharging-layout {
+                min-height: 0;
             }
 
             .journey-panel {
-                padding: 26px 20px;
+                padding: 18px 14px;
+            }
+
+            .journey-title {
+                margin-bottom: 15px;
+                font-size: 9px;
+            }
+
+            .journey-step {
+                gap: 10px;
+                padding-bottom: 18px;
+            }
+
+            .journey-number {
+                width: 27px;
+                height: 27px;
+            }
+
+            .journey-step strong {
+                font-size: 12px;
+            }
+
+            .journey-step p {
+                margin-top: 3px;
+                font-size: 10px;
+                line-height: 1.4;
             }
 
             .queue-panel {
-                margin: 18px;
-                padding: 22px;
+                margin: 10px;
+                padding: 15px;
+                border-radius: 14px;
+            }
+
+            .queue-icon {
+                width: 38px;
+                height: 38px;
+            }
+
+            .queue-kicker {
+                margin-top: 13px;
+                font-size: 8px;
+            }
+
+            .queue-panel h4 {
+                margin-top: 4px;
+                font-size: 17px;
+            }
+
+            .queue-panel > p {
+                margin-top: 5px;
+                font-size: 10px;
+                line-height: 1.45;
+            }
+
+            .token-box {
+                margin-top: 13px;
+                padding: 10px 11px;
+            }
+
+            .token-box strong {
+                font-size: 18px;
+            }
+
+            .queue-meta {
+                margin-top: 11px;
+                font-size: 9px;
             }
 
             .empty-session {
+                min-height: 190px;
                 align-items: flex-start;
                 flex-direction: column;
-                gap: 20px;
-                padding: 28px 22px;
+                gap: 12px;
+                padding: 22px 17px;
+                border-radius: 17px;
             }
 
+            .empty-visual {
+                width: 82px;
+                height: 82px;
+            }
+
+            .empty-bolt {
+                width: 48px;
+                height: 48px;
+                border-radius: 15px;
+            }
+
+            .empty-copy h3 {
+                font-size: 19px;
+            }
+
+            .empty-copy p {
+                font-size: 11px;
+                line-height: 1.45;
+            }
         }
     `}</style>
 );
